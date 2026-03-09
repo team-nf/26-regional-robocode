@@ -13,8 +13,6 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.Dimensions;
 import frc.robot.Constants.DriveConstants;
@@ -54,13 +52,13 @@ public class SwerveAimToHub extends Command {
     aimingPID.reset();
     averageError = 1.0;
 
-    if(DriverStation.getAlliance().map(a -> a == DriverStation.Alliance.Blue).orElse(true))
+    if(swerveDrivetrain.isRedAlliance())
     {
-      hubAimPose = PoseConstants.BLUE_HUB_AIM_POSE;
+      hubAimPose = PoseConstants.RED_HUB_AIM_POSE;
     }
     else
     {
-      hubAimPose = PoseConstants.RED_HUB_AIM_POSE;
+      hubAimPose = PoseConstants.BLUE_HUB_AIM_POSE;
     }
 
     prevErrors = new double[15];

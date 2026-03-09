@@ -13,8 +13,6 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.Dimensions;
 import frc.robot.Constants.DriveConstants;
@@ -73,13 +71,13 @@ public class SwerveAimToPass extends Command {
 
     double goalAngle;
 
-    if(DriverStation.getAlliance().map(a -> a == DriverStation.Alliance.Blue).orElse(true))
+    if(swerveDrivetrain.isRedAlliance())
     {
-      goalAngle = Math.toRadians(180);
+       goalAngle = Math.toRadians(0);
     }
     else
     {
-       goalAngle = Math.toRadians(0);
+      goalAngle = Math.toRadians(180);
     }
 
     double angleError = goalAngle - robotPose.getRotation().getRadians();
