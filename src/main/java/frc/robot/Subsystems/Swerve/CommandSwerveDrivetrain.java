@@ -276,13 +276,12 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         }*/
 
         boolean isRed = DriverStation.getAlliance().map(a -> a == Alliance.Red).orElse(false);
-        if (isRed) {
-            swerveData.distanceToHub = (PoseConstants.RED_HUB_AIM_POSE.getTranslation().getDistance(getPose().getTranslation()));
-            swerveData.xDistanceToHub = (Math.abs(PoseConstants.RED_HUB_AIM_POSE.getTranslation().getX() - getPose().getTranslation().getX()));
-        } else {
-            swerveData.distanceToHub = (PoseConstants.BLUE_HUB_AIM_POSE.getTranslation().getDistance(getPose().getTranslation()));
-            swerveData.xDistanceToHub = (Math.abs(PoseConstants.BLUE_HUB_AIM_POSE.getTranslation().getX() - getPose().getTranslation().getX()));
-        }
+        var robotTranslation = getPose().getTranslation();
+        var hubTranslation = isRed
+            ? PoseConstants.RED_HUB_AIM_POSE.getTranslation()
+            : PoseConstants.BLUE_HUB_AIM_POSE.getTranslation();
+        swerveData.distanceToHub = hubTranslation.getDistance(robotTranslation);
+        swerveData.xDistanceToHub = Math.abs(hubTranslation.getX() - robotTranslation.getX());
 
         if(!SmartDashboard.containsKey("Conf/AutoAimEnabled"))
         {
@@ -348,21 +347,14 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     }
 
     public void updateSwerveData(){
-        
-        swerveData.robotPose = getState().Pose;
+        var state = getState();
+        swerveData.robotPose = state.Pose;
 
-        Pose2d roundedRobotPose = new Pose2d(
-            TelemetryConstants.roundTelemetry(swerveData.robotPose.getX()), 
-            TelemetryConstants.roundTelemetry(swerveData.robotPose.getY()),
-            new Rotation2d(TelemetryConstants.roundTelemetry(swerveData.robotPose.getRotation().getRadians())));
-
-        //swerveData.field.setRobotPose(roundedRobotPose);
-
-        swerveData.robotVelocityX = MetersPerSecond.of(getState().Speeds.vxMetersPerSecond);
-        swerveData.robotVelocityY = MetersPerSecond.of(getState().Speeds.vyMetersPerSecond);
-        swerveData.robotSpeed =  MetersPerSecond.of(
-            Math.hypot(getState().Speeds.vxMetersPerSecond, getState().Speeds.vyMetersPerSecond));
-        swerveData.robotAngularVelocity = RadiansPerSecond.of(getState().Speeds.omegaRadiansPerSecond);
+        swerveData.robotVelocityX = MetersPerSecond.of(state.Speeds.vxMetersPerSecond);
+        swerveData.robotVelocityY = MetersPerSecond.of(state.Speeds.vyMetersPerSecond);
+        swerveData.robotSpeed = MetersPerSecond.of(
+            Math.hypot(state.Speeds.vxMetersPerSecond, state.Speeds.vyMetersPerSecond));
+        swerveData.robotAngularVelocity = RadiansPerSecond.of(state.Speeds.omegaRadiansPerSecond);
     }
 
     public void updateSwerveErrors(
