@@ -610,14 +610,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         SmartDashboard.putBoolean("Conf/AutoAimEnabled", autoAimEnabled);
 
         cacheAlliance();
-        if(isRedAlliance){
-            initialStartPose2d = PoseConstants.START_POSE_RED_LEFT;
-            resetPose(initialStartPose2d);
-        }
-        else{
-            initialStartPose2d = PoseConstants.START_POSE_BLUE_LEFT;
-            resetPose(initialStartPose2d);
-        }
+        initialStartPose2d = getStartPoseForSelection("LEFT");
+        resetPose(initialStartPose2d);
     }
 
     public void setStartPose()
@@ -676,35 +670,17 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     public InstantCommand setStartPoseLeftCommand()
     {
-        return new InstantCommand(() -> {
-            if(isRedAlliance)
-            {
-                resetPose(PoseConstants.START_POSE_RED_LEFT);
-            }
-            else resetPose(PoseConstants.START_POSE_BLUE_LEFT);
-        });
+        return new InstantCommand(() -> resetPose(getStartPoseForSelection("LEFT")));
     }
 
     public InstantCommand setStartPoseMiddleCommand()
     {
-        return new InstantCommand(() -> {
-            if(isRedAlliance)
-            {
-                resetPose(PoseConstants.START_POSE_RED_MIDDLE);
-            }
-            else resetPose(PoseConstants.START_POSE_BLUE_MIDDLE);
-        });
+        return new InstantCommand(() -> resetPose(getStartPoseForSelection("MIDDLE")));
     }
 
     public InstantCommand setStartPoseRightCommand()
     {
-        return new InstantCommand(() -> {
-            if(isRedAlliance)
-            {
-                resetPose(PoseConstants.START_POSE_RED_RIGHT);
-            }
-            else resetPose(PoseConstants.START_POSE_BLUE_RIGHT);
-        });
+        return new InstantCommand(() -> resetPose(getStartPoseForSelection("RIGHT")));
     }
 
      public void visionPeriodic()
@@ -728,39 +704,22 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         if(DriverStation.isDisabled())
         {
             String selectedStartPose = startPoseChooser.getSelected();
-            Pose2d selectedPose = new Pose2d();
-            if (isRedAlliance) {
-                switch (selectedStartPose) {
-                    case "LEFT":
-                        selectedPose = PoseConstants.START_POSE_RED_LEFT;
-                        break;
-                    case "MIDDLE":
-                        selectedPose = PoseConstants.START_POSE_RED_MIDDLE;
-                        break;
-                    case "RIGHT":
-                        selectedPose = PoseConstants.START_POSE_RED_RIGHT;
-                        break;
-                }
-            } else {
-                switch (selectedStartPose) {
-                    case "LEFT":
-                        selectedPose = PoseConstants.START_POSE_BLUE_LEFT;
-                        break;
-                    case "MIDDLE":
-                        selectedPose = PoseConstants.START_POSE_BLUE_MIDDLE;
-                        break;
-                    case "RIGHT":
-                        selectedPose = PoseConstants.START_POSE_BLUE_RIGHT;
-                        break;
-                }
-                
-            }
+            Pose2d selectedPose = getStartPoseForSelection(selectedStartPose);
 
             if(!selectedPose.equals(initialStartPose2d))
             {
                 initialStartPose2d = selectedPose;
                 resetPose(initialStartPose2d);
             }
+        }
+     }
+
+     private Pose2d getStartPoseForSelection(String selection) {
+        switch (selection) {
+            case "LEFT":   return isRedAlliance ? PoseConstants.START_POSE_RED_LEFT   : PoseConstants.START_POSE_BLUE_LEFT;
+            case "MIDDLE": return isRedAlliance ? PoseConstants.START_POSE_RED_MIDDLE : PoseConstants.START_POSE_BLUE_MIDDLE;
+            case "RIGHT":  return isRedAlliance ? PoseConstants.START_POSE_RED_RIGHT  : PoseConstants.START_POSE_BLUE_RIGHT;
+            default:       return isRedAlliance ? PoseConstants.START_POSE_RED_LEFT   : PoseConstants.START_POSE_BLUE_LEFT;
         }
      }
 

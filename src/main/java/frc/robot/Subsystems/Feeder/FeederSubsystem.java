@@ -56,8 +56,8 @@ public class FeederSubsystem extends SubsystemBase {
     feederData.feederError = feederData.feederGoalVelocity - feederData.feederVelocity;
     
     feederData.feederRollerState = Math.abs(feederData.feederError) <= FeederConstants.FEEDER_ALLOWABLE_ERROR.in(RotationsPerSecond)
-        ? frc.robot.Constants.States.FeederStates.FeederRollerState.AT_SPEED
-        : frc.robot.Constants.States.FeederStates.FeederRollerState.REACHING_SPEED;
+        ? FeederRollerState.AT_SPEED
+        : FeederRollerState.REACHING_SPEED;
   }
 
   public void zero() {
