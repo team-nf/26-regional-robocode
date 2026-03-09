@@ -82,9 +82,6 @@ public class TheMachine {
   private Command theMachineGetReadyActionPas;
 
   private LEDController leftLed;
-  //private LEDController rightLed;
-  //private LEDController frontLed;
-  //private LEDController backLed;
 
   private boolean hasLotsOfFuel = true;
 

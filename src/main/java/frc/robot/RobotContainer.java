@@ -93,13 +93,10 @@ public class RobotContainer {
                             m_swerveDrivetrain.swerveDataSupplier());
     
 
-    //m_ledSubsytem = new LedSubsytem();
-
     m_driverController = new CommandXboxController(DriveConstants.DRIVER_CONTROLLER_PORT);
 
     configureBindings();
     if(Utils.isSimulation()) configureSims();
-    //configureTelemetry();
 
     boolean isCompetition = false;
     autoChooser = AutoBuilder.buildAutoChooserWithOptionsModifier(

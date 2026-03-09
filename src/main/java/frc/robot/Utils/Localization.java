@@ -37,12 +37,6 @@ public class Localization {
         this.drivetrain = drivetrain;
         this.useMT2 = true;
 
-        // Switch to internal IMU with external assist when enabled
-        //LimelightHelpers.SetIMUAssistAlpha("limelight-left", 0.001);  // Adjust correction strength
-
-        // Switch to internal IMU with external assist when enabled
-        //LimelightHelpers.SetIMUAssistAlpha("limelight-right", 0.001);  // Adjust correction strength
-
         SmartDashboard.putBoolean("Conf/LL-Left_Enabled", true);
         SmartDashboard.putBoolean("Conf/LL-Right_Enabled", true);
         SmartDashboard.putBoolean("Conf/DisabledLocoEnabled", true);
@@ -265,8 +259,6 @@ public class Localization {
     {   
         if(!isLLReady && isMode1Set)
         {
-            //setImuMode2();
-            //setImuMode0();
             isLLReady = true;
         }
 
@@ -277,7 +269,6 @@ public class Localization {
     {
         double robotYaw = drivetrain.getGyroHeading();
         LimelightHelpers.SetRobotOrientation("limelight-right", robotYaw, 0.0, 0.0, 0.0, 0.0, 0.0);
-        //setImuMode1();
 
         LimelightHelpers.PoseEstimate limelightMeasurementRight = LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight-right");
 

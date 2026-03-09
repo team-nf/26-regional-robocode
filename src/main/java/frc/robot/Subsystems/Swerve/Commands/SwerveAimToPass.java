@@ -14,10 +14,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.Constants.Dimensions;
 import frc.robot.Constants.DriveConstants;
-import frc.robot.Constants.PoseConstants;
-import frc.robot.Constants.TunerConstants;
 import frc.robot.Constants.States.SwerveStates.SwerveState;
 import frc.robot.Subsystems.Swerve.CommandSwerveDrivetrain;
 
@@ -29,12 +26,8 @@ public class SwerveAimToPass extends Command {
 
   private PIDController aimingPID;
 
-  private Pose2d passAimPose;
-
-  private double MaxAngularRate = DriveConstants.AIMING_MAX_ANGULAR_VELOCITY.in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
-
   private double goalAngle;
-  private double[] prevErrors = new double[10];
+  private double[] prevErrors = new double[15];
   private double averageError = 0.0;
 
   private SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()

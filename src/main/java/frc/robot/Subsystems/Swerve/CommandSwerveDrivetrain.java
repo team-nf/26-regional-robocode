@@ -3,7 +3,6 @@ package frc.robot.Subsystems.Swerve;
 import static edu.wpi.first.units.Units.*;
 
 import java.io.IOException;
-import java.lang.annotation.Retention;
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
@@ -397,7 +396,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     public double getGyroRate() {
         return getPigeon2().getAngularVelocityZWorld().getValueAsDouble();
-        //return getState().Speeds.omegaRadiansPerSecond;
     }
 
     public void gyroReset() {
@@ -677,14 +675,9 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     public Command pathFindToStartPose1()
     {
-        Pose2d targetPose = new Pose2d(-1,-1,new Rotation2d());
-
-        if(isRedAlliance)
-        {
-            targetPose = PoseConstants.START_POSE_RED_RIGHT;
-        }
-        else targetPose = PoseConstants.START_POSE_BLUE_RIGHT;
-    
+        Pose2d targetPose = isRedAlliance
+            ? PoseConstants.START_POSE_RED_RIGHT
+            : PoseConstants.START_POSE_BLUE_RIGHT;
         return goToPose(targetPose);
     }
 
