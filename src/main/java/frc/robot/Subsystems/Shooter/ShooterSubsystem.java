@@ -173,9 +173,6 @@ public class ShooterSubsystem extends SubsystemBase {
     return shooterHardware.getHoodPosition();
   }
 
-  public ShooterControlData getCurrentControlData() {
-    return shooterData;
-  }
 
   private void scheduleIfNotRunning(Command action) {
     var scheduler = CommandScheduler.getInstance();

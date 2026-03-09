@@ -267,7 +267,7 @@ public class RobotContainer {
     hopperSim.setShouldRemoveFuelSupplier(() -> m_intakeSubsystem.isIntakeDeployed() 
                         && m_intakeSubsystem.isIntakeState(IntakeControlState.REVERSE));
 
-    shooterSim.setShooterControlDataSupplier(m_shooterSubsystem::getCurrentControlData);
+    shooterSim.setShooterControlDataSupplier(m_shooterSubsystem::getShooterData);
     shooterSim.setRobotPoseSupplier(m_swerveDrivetrain::getPose);
     shooterSim.setChassisSpeedsSupplier(m_swerveDrivetrain::getFieldSpeeds);
     shooterSim.setShouldShootSupplier(() -> (m_shooterSubsystem.isShooterState(ShooterControlState.SHOOT) || m_shooterSubsystem.isShooterState(ShooterControlState.TEST))

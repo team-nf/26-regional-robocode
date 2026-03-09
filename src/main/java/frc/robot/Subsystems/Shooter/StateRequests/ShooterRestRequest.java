@@ -7,9 +7,6 @@ package frc.robot.Subsystems.Shooter.StateRequests;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import frc.robot.Constants.States.ShooterStates.*;
 import frc.robot.Subsystems.Shooter.ShooterSubsystem;
-import frc.robot.Subsystems.Shooter.Utils.ShooterCalculator;
-
-import static edu.wpi.first.units.Units.*;
 
 // NOTE:  Consider using this command inline, rather than writing a subclass.  For more
 // information, see:
