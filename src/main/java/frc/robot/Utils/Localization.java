@@ -2,8 +2,11 @@ package frc.robot.Utils;
 
 import com.ctre.phoenix6.StatusSignal.SignalMeasurement;
 
+import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.numbers.N1;
+import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.CurrentUnit;
@@ -20,6 +23,9 @@ import frc.robot.Utils.LimelightHelpers.PoseEstimate;
 
 
 public class Localization {
+    private static final Matrix<N3, N1> MT2_STD_DEVS = VecBuilder.fill(0.6, 0.6, 9999999);
+    private static final Matrix<N3, N1> MT1_STD_DEVS = VecBuilder.fill(0.5, 0.5, 9999999);
+
     CommandSwerveDrivetrain drivetrain;
     LimelightHelpers.PoseEstimate currentPoseEstimateFinal;
     boolean useMT2;
@@ -88,7 +94,7 @@ public class Localization {
     {
         if(!doRejectLeft && SmartDashboard.getBoolean("Conf/LL-Left_Enabled", true))
         {
-            drivetrain.setVisionMeasurementStdDevs(VecBuilder.fill(.6,.6,9999999));
+            drivetrain.setVisionMeasurementStdDevs(MT2_STD_DEVS);
 
             drivetrain.addVisionMeasurement(
             limelightMeasurementLeft.pose,
@@ -98,7 +104,7 @@ public class Localization {
 
         if(!doRejectRight && SmartDashboard.getBoolean("Conf/LL-Right_Enabled", true))
         {
-            drivetrain.setVisionMeasurementStdDevs(VecBuilder.fill(.6,.6,9999999));
+            drivetrain.setVisionMeasurementStdDevs(MT2_STD_DEVS);
             drivetrain.addVisionMeasurement(
             limelightMeasurementRight.pose,
             limelightMeasurementRight.timestampSeconds
@@ -161,7 +167,7 @@ public class Localization {
     {
         if(!doRejectLeft && SmartDashboard.getBoolean("Conf/LL-Left_Enabled", true))
         {
-            drivetrain.setVisionMeasurementStdDevs(VecBuilder.fill(.5,.5,9999999));
+            drivetrain.setVisionMeasurementStdDevs(MT1_STD_DEVS);
 
             drivetrain.addVisionMeasurement(
             limelightMeasurementLeft.pose,
@@ -171,7 +177,7 @@ public class Localization {
 
         if(!doRejectRight && SmartDashboard.getBoolean("Conf/LL-Right_Enabled", true))
         {
-            drivetrain.setVisionMeasurementStdDevs(VecBuilder.fill(.5,.5,9999999));
+            drivetrain.setVisionMeasurementStdDevs(MT1_STD_DEVS);
             drivetrain.addVisionMeasurement(
             limelightMeasurementRight.pose,
             limelightMeasurementRight.timestampSeconds
