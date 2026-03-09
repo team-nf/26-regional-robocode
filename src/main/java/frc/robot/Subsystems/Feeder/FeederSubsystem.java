@@ -116,28 +116,18 @@ public class FeederSubsystem extends SubsystemBase {
     return feederData;
   }
 
+  private void scheduleIfNotRunning(Command action) {
+    var scheduler = CommandScheduler.getInstance();
+    if (!scheduler.isScheduled(action)) scheduler.schedule(action);
+  }
+
   public void stateMachine() {
     switch (feederData.feederControlState) {
-      case ZERO:
-        if(!CommandScheduler.getInstance().isScheduled(feederZeroAction))
-                    CommandScheduler.getInstance().schedule(feederZeroAction);
-        break;
-      case FEED:
-        if(!CommandScheduler.getInstance().isScheduled(feederFeedAction))
-                    CommandScheduler.getInstance().schedule(feederFeedAction);
-        break;
-      case REVERSE:
-        if(!CommandScheduler.getInstance().isScheduled(feederReverseAction))
-                    CommandScheduler.getInstance().schedule(feederReverseAction);
-        break;
-      case TEST:
-        if(!CommandScheduler.getInstance().isScheduled(feederTestAction))
-                    CommandScheduler.getInstance().schedule(feederTestAction);
-        break;
-      default:
-        if(!CommandScheduler.getInstance().isScheduled(feederZeroAction))
-                    CommandScheduler.getInstance().schedule(feederZeroAction);
-        break;
+      case ZERO:    scheduleIfNotRunning(feederZeroAction); break;
+      case FEED:    scheduleIfNotRunning(feederFeedAction); break;
+      case REVERSE: scheduleIfNotRunning(feederReverseAction); break;
+      case TEST:    scheduleIfNotRunning(feederTestAction); break;
+      default:      scheduleIfNotRunning(feederZeroAction); break;
     }
   }
 

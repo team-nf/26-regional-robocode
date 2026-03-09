@@ -354,73 +354,33 @@ public class TheMachine {
     funnelPosePublisher.set(funnelPose);
   }
 
+  private void scheduleIfNotRunning(Command action) {
+    var scheduler = CommandScheduler.getInstance();
+    if (!scheduler.isScheduled(action)) {
+      scheduler.schedule(action);
+    }
+  }
+
   public void stateMachine() {
     switch (theMachineData.theMachineControlState) {
-      case ZERO:
-        if(!CommandScheduler.getInstance().isScheduled(theMachineZeroAction))
-        {
-          CommandScheduler.getInstance().schedule(theMachineZeroAction);
-        }
-        break;
-      case IDLE_DEPLOYED:
-        if(!CommandScheduler.getInstance().isScheduled(theMachineIdleDeployedAction))
-        {
-          CommandScheduler.getInstance().schedule(theMachineIdleDeployedAction);
-        }
-        break;
-      case IDLE_RETRACTED:
-        if(!CommandScheduler.getInstance().isScheduled(theMachineIdleRetractedAction))
-        {
-          CommandScheduler.getInstance().schedule(theMachineIdleRetractedAction);
-        }
-        break;
-      case INTAKE:
-        if(!CommandScheduler.getInstance().isScheduled(theMachineIntakeAction))
-        {
-          CommandScheduler.getInstance().schedule(theMachineIntakeAction);
-        }
-        break;
-      case SHOOT:
-        if(!CommandScheduler.getInstance().isScheduled(theMachineShootAction))
-        {
-          CommandScheduler.getInstance().schedule(theMachineShootAction);
-        }
-        break;
-      case REVERSE:
-        if(!CommandScheduler.getInstance().isScheduled(theMachineReverseAction))
-        {
-          CommandScheduler.getInstance().schedule(theMachineReverseAction);
-        }
-        break;
-      case TEST:
-        if(!CommandScheduler.getInstance().isScheduled(theMachineTestAction))
-        {
-          CommandScheduler.getInstance().schedule(theMachineTestAction);
-        }
-        break;
-      case IDLE:
-        if (!CommandScheduler.getInstance().isScheduled(theMachineIdleAction)) {
-          CommandScheduler.getInstance().schedule(theMachineIdleAction);
-        }
-        break;
-      case GET_READY:
-        if (!CommandScheduler.getInstance().isScheduled(theMachineGetReadyAction)) {
-          CommandScheduler.getInstance().schedule(theMachineGetReadyAction);
-        }
-        break;
-      case GET_READY_PAS:
-        if (!CommandScheduler.getInstance().isScheduled(theMachineGetReadyActionPas)) {
-          CommandScheduler.getInstance().schedule(theMachineGetReadyActionPas);
-        }
-        break;
+      case ZERO:            scheduleIfNotRunning(theMachineZeroAction); break;
+      case IDLE_DEPLOYED:   scheduleIfNotRunning(theMachineIdleDeployedAction); break;
+      case IDLE_RETRACTED:  scheduleIfNotRunning(theMachineIdleRetractedAction); break;
+      case INTAKE:          scheduleIfNotRunning(theMachineIntakeAction); break;
+      case SHOOT:           scheduleIfNotRunning(theMachineShootAction); break;
+      case REVERSE:         scheduleIfNotRunning(theMachineReverseAction); break;
+      case TEST:            scheduleIfNotRunning(theMachineTestAction); break;
+      case IDLE:            scheduleIfNotRunning(theMachineIdleAction); break;
+      case GET_READY:       scheduleIfNotRunning(theMachineGetReadyAction); break;
+      case GET_READY_PAS:   scheduleIfNotRunning(theMachineGetReadyActionPas); break;
       case NONE:
-        CommandScheduler.getInstance().schedule(shooterSubsystem.zeroRequest());
-        CommandScheduler.getInstance().schedule(feederSubsystem.zeroRequest());
-        CommandScheduler.getInstance().schedule(hopperSubsystem.zeroRequest());
-        CommandScheduler.getInstance().schedule(intakeSubsystem.closeRequest());
+        var scheduler = CommandScheduler.getInstance();
+        scheduler.schedule(shooterSubsystem.zeroRequest());
+        scheduler.schedule(feederSubsystem.zeroRequest());
+        scheduler.schedule(hopperSubsystem.zeroRequest());
+        scheduler.schedule(intakeSubsystem.closeRequest());
         break;
-      default:
-        break;
+      default: break;
     }
   }
 

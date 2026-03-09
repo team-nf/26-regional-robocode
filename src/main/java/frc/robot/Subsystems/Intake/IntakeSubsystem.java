@@ -222,54 +222,23 @@ public class IntakeSubsystem extends SubsystemBase {
     return intakeHardware.getIntakeArmPosition();
   }
 
+  private void scheduleIfNotRunning(Command action) {
+    var scheduler = CommandScheduler.getInstance();
+    if (!scheduler.isScheduled(action)) scheduler.schedule(action);
+  }
+
   public void stateMachine() {
     switch (intakeData.intakeControlState) {
-      case CLOSE:
-              if(!CommandScheduler.getInstance().isScheduled(intakeClosedAction)) {
-                CommandScheduler.getInstance().schedule(intakeClosedAction);
-              }
-        break;
-      case DEPLOY:
-        if(!CommandScheduler.getInstance().isScheduled(intakeDeployAction)) {
-          CommandScheduler.getInstance().schedule(intakeDeployAction);
-        }
-        break;
-      case INTAKE:
-        if(!CommandScheduler.getInstance().isScheduled(intakeIntakeAction)) {
-          CommandScheduler.getInstance().schedule(intakeIntakeAction);
-        }
-        break;
-      case FEED:
-        if(!CommandScheduler.getInstance().isScheduled(intakeFeedAction)) {
-          CommandScheduler.getInstance().schedule(intakeFeedAction);
-        }
-        break;
-      case REVERSE:
-        if(!CommandScheduler.getInstance().isScheduled(intakeReverseAction)) {
-          CommandScheduler.getInstance().schedule(intakeReverseAction);
-        }
-        break;
-      case IDLE_BETWEEN:
-        if(!CommandScheduler.getInstance().isScheduled(intakeIdleBetweenAction)) {
-          CommandScheduler.getInstance().schedule(intakeIdleBetweenAction);
-        }
-        break;
-      case TEST:
-        if(!CommandScheduler.getInstance().isScheduled(intakeTestAction)) {
-          CommandScheduler.getInstance().schedule(intakeTestAction);
-        }
-        break;
-      case INTAKE_WITH_OFFSET:
-        if(!CommandScheduler.getInstance().isScheduled(intakeWithOffsetAction)) {
-          CommandScheduler.getInstance().schedule(intakeWithOffsetAction);
-        }
-        break;
-      default:
-        if(!CommandScheduler.getInstance().isScheduled(intakeClosedAction)) {
-          CommandScheduler.getInstance().schedule(intakeClosedAction);
-        }
-        break;
-    }   
+      case CLOSE:              scheduleIfNotRunning(intakeClosedAction); break;
+      case DEPLOY:             scheduleIfNotRunning(intakeDeployAction); break;
+      case INTAKE:             scheduleIfNotRunning(intakeIntakeAction); break;
+      case FEED:               scheduleIfNotRunning(intakeFeedAction); break;
+      case REVERSE:            scheduleIfNotRunning(intakeReverseAction); break;
+      case IDLE_BETWEEN:       scheduleIfNotRunning(intakeIdleBetweenAction); break;
+      case TEST:               scheduleIfNotRunning(intakeTestAction); break;
+      case INTAKE_WITH_OFFSET: scheduleIfNotRunning(intakeWithOffsetAction); break;
+      default:                 scheduleIfNotRunning(intakeClosedAction); break;
+    }
   }
 
   @Override

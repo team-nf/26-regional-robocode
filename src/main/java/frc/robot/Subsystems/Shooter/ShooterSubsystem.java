@@ -177,33 +177,18 @@ public class ShooterSubsystem extends SubsystemBase {
     return shooterData;
   }
 
+  private void scheduleIfNotRunning(Command action) {
+    var scheduler = CommandScheduler.getInstance();
+    if (!scheduler.isScheduled(action)) scheduler.schedule(action);
+  }
+
   public void stateMachine() {
     switch (shooterData.shooterControlState) {
-      case ZERO:
-        if(!CommandScheduler.getInstance().isScheduled(shooterZeroAction)) {
-          CommandScheduler.getInstance().schedule(shooterZeroAction);
-        }
-        break;
-      case REST:
-        if(!CommandScheduler.getInstance().isScheduled(shooterRestAction)) {
-          CommandScheduler.getInstance().schedule(shooterRestAction);
-        }
-        break;
-      case SHOOT:
-        if(!CommandScheduler.getInstance().isScheduled(shooterShootAction)) {
-          CommandScheduler.getInstance().schedule(shooterShootAction);
-        }
-        break;
-      case TEST:
-        if(!CommandScheduler.getInstance().isScheduled(shooterTestAction)) {
-          CommandScheduler.getInstance().schedule(shooterTestAction);
-        }
-        break;
-      default:
-        if(!CommandScheduler.getInstance().isScheduled(shooterZeroAction)) {
-          CommandScheduler.getInstance().schedule(shooterZeroAction);
-        }
-        break;
+      case ZERO:    scheduleIfNotRunning(shooterZeroAction); break;
+      case REST:    scheduleIfNotRunning(shooterRestAction); break;
+      case SHOOT:   scheduleIfNotRunning(shooterShootAction); break;
+      case TEST:    scheduleIfNotRunning(shooterTestAction); break;
+      default:      scheduleIfNotRunning(shooterZeroAction); break;
     }
   }
 
