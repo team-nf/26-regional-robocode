@@ -270,11 +270,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             SmartDashboard.putData("Swerve Control Data", swerveData);
         }
 
-        /* 
-        if (TelemetryConstants.SHOULD_SWERVE_FIELD_COMMUNICATE) {
-            SmartDashboard.putData("Field", swerveData.field);
-        }*/
-
         boolean isRed = DriverStation.getAlliance().map(a -> a == Alliance.Red).orElse(false);
         var robotTranslation = getPose().getTranslation();
         var hubTranslation = isRed
@@ -296,19 +291,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             
             autoAimEnabled = SmartDashboard.getBoolean("Conf/AutoAimEnabled", autoAimEnabled);
         }
-
-
-        /* 
-        if (DriverStation.isEnabled() && !isNeutralModeBrake)
-        {
-            configNeutralMode(NeutralModeValue.Brake);
-            isNeutralModeBrake = true;
-        }
-        else if (!DriverStation.isEnabled() && isNeutralModeBrake)
-        {
-            configNeutralMode(NeutralModeValue.Coast);
-            isNeutralModeBrake = false;
-        }*/
 
         updateStartConditions();
         visionPeriodic();
