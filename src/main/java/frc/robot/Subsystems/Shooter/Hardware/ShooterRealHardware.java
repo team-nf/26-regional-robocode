@@ -42,27 +42,10 @@ public class ShooterRealHardware implements ShooterHardware {
     private double flywheelVelocityLeft = 0;
     private double flywheelVelocityRight = 0;
 
-    private double shootVelocityLeft = 0;
-    private double shootVelocityRight = 0;
-
-    private double shootVoltageLeft = 0;
-    private double shootVoltageRight = 0;
-
-    private double shootCurrentLeft = 0;
-    private double shootCurrentRight = 0;
-
     private double shootErrorLeft = 0.0;
     private double shootErrorRight = 0.0;
 
-    private double shootReferenceLeft = 0.0;
-    private double shootReferenceRight = 0.0;
-
-
     private double hoodPosition = 0;
-    private double hoodMotorPosition = 0;
-    private double hoodVoltage = 0;
-    private double hoodCurrent = 0;
-    private double hoodReference = 0.0;
     private double hoodError = 0.0;
 
     private double testFlywheelGoal= 35;
@@ -227,26 +210,10 @@ public class ShooterRealHardware implements ShooterHardware {
         flywheelVelocityLeft = firstShootMotor.getVelocity().getValue().div(ShooterConstants.FLYWHEEL_GEAR_REDUCTION).in(RotationsPerSecond);
         flywheelVelocityRight = thirdShootMotor.getVelocity().getValue().div(ShooterConstants.FLYWHEEL_GEAR_REDUCTION).in(RotationsPerSecond);
 
-        //shootVelocityLeft = firstShootMotor.getVelocity().getValue();
-        //shootVelocityRight = thirdShootMotor.getVelocity().getValue();
-
-        //shootVoltageLeft = firstShootMotor.getMotorVoltage().getValue();
-        //shootVoltageRight = thirdShootMotor.getMotorVoltage().getValue();
-
-        //shootCurrentLeft = firstShootMotor.getStatorCurrent().getValue();
-        //shootCurrentRight = thirdShootMotor.getStatorCurrent().getValue();
-
         shootErrorLeft = firstShootMotor.getClosedLoopError().getValue();
         shootErrorRight = thirdShootMotor.getClosedLoopError().getValue();
 
-        //shootReferenceLeft = firstShootMotor.getClosedLoopReference().getValue();
-        //shootReferenceRight = thirdShootMotor.getClosedLoopReference().getValue();
-
         hoodPosition = hoodMotor.getPosition().getValue().div(ShooterConstants.HOOD_GEAR_REDUCTION).in(Rotations);
-        //hoodMotorPosition = hoodMotor.getPosition().getValue();
-        //hoodVoltage = hoodMotor.getMotorVoltage().getValue();
-        //hoodCurrent = hoodMotor.getStatorCurrent().getValue();
-        //hoodReference = hoodMotor.getClosedLoopReference().getValue();
         hoodError = hoodMotor.getClosedLoopError().getValue();
     }
 
@@ -260,76 +227,10 @@ public class ShooterRealHardware implements ShooterHardware {
         
     builder.addDoubleProperty("Flywheel Velocity Left", () -> TelemetryConstants.roundTelemetry(flywheelVelocityLeft*60), null);
     builder.addDoubleProperty("Flywheel Velocity Right", () -> TelemetryConstants.roundTelemetry(flywheelVelocityRight*60), null);
-    builder.addDoubleProperty("Shoot Motor Velocity Left", () -> TelemetryConstants.roundTelemetry(shootVelocityLeft*(60)), null);
-    builder.addDoubleProperty("Shoot Motor Velocity Right", () -> TelemetryConstants.roundTelemetry(shootVelocityRight*(60)), null);
-    builder.addDoubleProperty("Shoot Voltage Left", () -> TelemetryConstants.roundTelemetry(shootVoltageLeft), null);
-    builder.addDoubleProperty("Shoot Voltage Right", () -> TelemetryConstants.roundTelemetry(shootVoltageRight), null);
-    builder.addDoubleProperty("Shoot Current Left", () -> TelemetryConstants.roundTelemetry(shootCurrentLeft), null);
-    builder.addDoubleProperty("Shoot Current Right", () -> TelemetryConstants.roundTelemetry(shootCurrentRight), null);
-    builder.addDoubleProperty("Shoot Reference Left", () -> TelemetryConstants.roundTelemetry(shootReferenceLeft), null);
-    builder.addDoubleProperty("Shoot Reference Right", () -> TelemetryConstants.roundTelemetry(shootReferenceRight), null);
     builder.addDoubleProperty("Shoot Error Left", () -> TelemetryConstants.roundTelemetry(shootErrorLeft), null);
     builder.addDoubleProperty("Shoot Error Right", () -> TelemetryConstants.roundTelemetry(shootErrorRight), null);
     builder.addDoubleProperty("Hood Position", () -> TelemetryConstants.roundTelemetry(hoodPosition*360), null);
-    builder.addDoubleProperty("Hood Motor Position", () -> TelemetryConstants.roundTelemetry(hoodMotorPosition*360), null);
-    builder.addDoubleProperty("Hood Voltage", () -> TelemetryConstants.roundTelemetry(hoodVoltage), null);
-    builder.addDoubleProperty("Hood Current", () -> TelemetryConstants.roundTelemetry(hoodCurrent), null);
-    builder.addDoubleProperty("Hood Reference", () -> TelemetryConstants.roundTelemetry(hoodReference), null);
     builder.addDoubleProperty("Hood Error", () -> TelemetryConstants.roundTelemetry(hoodError*360), null);
-/*
-        builder.addDoubleProperty("Test Flywheel Goal", () -> testFlywheelGoal*(60), (val) -> {
-            testFlywheelGoal = (val/60);
-        });
-
-        builder.addDoubleProperty("Test Hood Goal", () -> testHoodGoal*360, (val) -> {
-            testHoodGoal = val/360;
-        });
-
-        builder.addDoubleProperty("Shoot KS", () -> shootMotorConfigR.Slot0.kS, (val) -> {
-            shootMotorConfigR.Slot0.kS = val;
-            updateMotorConfigs();
-        });
-        builder.addDoubleProperty("Shoot KV", () -> shootMotorConfigR.Slot0.kV, (val) -> {
-            shootMotorConfigR.Slot0.kV = val;
-            updateMotorConfigs();
-        });
-        builder.addDoubleProperty("Shoot KP", () -> shootMotorConfigR.Slot0.kP, (val) -> {
-            shootMotorConfigR.Slot0.kP = val;
-            updateMotorConfigs();
-        });
-        builder.addDoubleProperty("Shoot KI", () -> shootMotorConfigR.Slot0.kI, (val) -> {
-            shootMotorConfigR.Slot0.kI = val;
-            updateMotorConfigs();
-        });
-        builder.addDoubleProperty("Shoot KD", () -> shootMotorConfigR.Slot0.kD, (val) -> {
-            shootMotorConfigR.Slot0.kD = val;
-            updateMotorConfigs();
-        });
-
-        builder.addDoubleProperty("Hood KS", () -> hoodMotorConfig.Slot0.kS, (val) -> {
-            hoodMotorConfig.Slot0.kS = val;
-            updateMotorConfigs();
-        });
-        builder.addDoubleProperty("Hood KV", () -> hoodMotorConfig.Slot0.kV, (val) -> {
-            hoodMotorConfig.Slot0.kV = val;
-            updateMotorConfigs();
-        });
-        builder.addDoubleProperty("Hood KP", () -> hoodMotorConfig.Slot0.kP, (val) -> {
-            hoodMotorConfig.Slot0.kP = val;
-            updateMotorConfigs();
-        });
-        builder.addDoubleProperty("Hood KI", () -> hoodMotorConfig.Slot0.kI, (val) -> {
-            hoodMotorConfig.Slot0.kI = val;
-            updateMotorConfigs();
-        });
-        builder.addDoubleProperty("Hood KD", () -> hoodMotorConfig.Slot0.kD, (val) -> {
-            hoodMotorConfig.Slot0.kD = val;
-            updateMotorConfigs();
-        });
-        builder.addDoubleProperty("Hood KG", () -> hoodMotorConfig.Slot0.kG, (val) -> {
-            hoodMotorConfig.Slot0.kG = val;
-            updateMotorConfigs();
-        });*/
     }
 
     @Override
