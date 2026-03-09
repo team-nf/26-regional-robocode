@@ -286,19 +286,11 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         swerveData.distanceToHub = hubTranslation.getDistance(robotTranslation);
         swerveData.xDistanceToHub = Math.abs(hubTranslation.getX() - robotTranslation.getX());
 
-        if(!SmartDashboard.containsKey("Conf/AutoAimEnabled"))
+        if(DriverStation.isAutonomous())
         {
-            SmartDashboard.putBoolean("Conf/AutoAimEnabled", autoAimEnabled);
+            SmartDashboard.putBoolean("Conf/AutoAimEnabled", true);
         }
-        else
-        {
-            if(DriverStation.isAutonomous())
-            {
-                SmartDashboard.putBoolean("Conf/AutoAimEnabled", true);
-            }
-            
-            autoAimEnabled = SmartDashboard.getBoolean("Conf/AutoAimEnabled", autoAimEnabled);
-        }
+        autoAimEnabled = SmartDashboard.getBoolean("Conf/AutoAimEnabled", autoAimEnabled);
 
         updateStartConditions();
         visionPeriodic();
@@ -615,6 +607,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         startPoseChooser.setDefaultOption("LEFT", "LEFT");
     
         SmartDashboard.putData("Conf/StartPoseChooser", startPoseChooser);
+        SmartDashboard.putBoolean("Conf/AutoAimEnabled", autoAimEnabled);
 
         cacheAlliance();
         if(isRedAlliance){

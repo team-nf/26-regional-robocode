@@ -121,9 +121,8 @@ public class TheMachine {
     theMachineGetReadyActionPas = TheMachineGetReadyActionPas.get(this);
 
     leftLed = new LEDController(0, 30);
-    //rightLed = new LEDController(1, 31);
-    //frontLed = new LEDController(2,31);
-    //backLed = new LEDController(3,31);
+
+    SmartDashboard.putBoolean("Conf/HasLotsOfFuel", hasLotsOfFuel);
 
     matchTracker = new MatchTracker();
   }
@@ -426,13 +425,6 @@ public class TheMachine {
       calculateSubsytemPoses();
     }
 
-    if(!SmartDashboard.containsKey("Conf/HasLotsOfFuel")) 
-    {
-      SmartDashboard.putBoolean("Conf/HasLotsOfFuel", hasLotsOfFuel);
-    }
-    else
-    {
-      hasLotsOfFuel = SmartDashboard.getBoolean("Conf/HasLotsOfFuel", hasLotsOfFuel);
-    }
+    hasLotsOfFuel = SmartDashboard.getBoolean("Conf/HasLotsOfFuel", hasLotsOfFuel);
   }
 }
