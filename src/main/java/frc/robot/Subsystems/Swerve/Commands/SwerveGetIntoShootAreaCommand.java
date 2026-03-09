@@ -40,16 +40,9 @@ public class SwerveGetIntoShootAreaCommand extends ParallelCommandGroup {
 
     isBlueAlliance = !drivetrain.isRedAlliance();
 
-    //isBlueAlliance = true;
-
-    if(isBlueAlliance)
-    {
-      hubAimPose = new Pose2d(4.61, 4.1, new Rotation2d());
-    }
-    else
-    {
-      hubAimPose = new Pose2d(11.92, 4.1, new Rotation2d());
-    }
+    hubAimPose = isBlueAlliance
+        ? new Pose2d(4.61, 4.1, Rotation2d.kZero)
+        : new Pose2d(11.92, 4.1, Rotation2d.kZero);
 
 
     Command pathFindToShootingPose = new DeferredCommand(() -> AutoBuilder.pathfindToPose(calculateShootingPose().get(), DriveConstants.PATH_CONSTRAINTS_TO_POSE)

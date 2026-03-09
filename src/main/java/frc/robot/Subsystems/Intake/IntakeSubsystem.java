@@ -254,8 +254,10 @@ public class IntakeSubsystem extends SubsystemBase {
         SmartDashboard.putData("Intake Control Data", intakeData);
     }
 
-    SmartDashboard.putBoolean("Conf/isIntakeIntake", isIntakeState(IntakeControlState.INTAKE));
-    SmartDashboard.putBoolean("Conf/isIntakeIntakeW_Offset", isIntakeState(IntakeControlState.INTAKE_WITH_OFFSET));
+    if (TelemetryConstants.SHOULD_INTAKE_CONTROL_COMMUNICATE) {
+        SmartDashboard.putBoolean("Conf/isIntakeIntake", isIntakeState(IntakeControlState.INTAKE));
+        SmartDashboard.putBoolean("Conf/isIntakeIntakeW_Offset", isIntakeState(IntakeControlState.INTAKE_WITH_OFFSET));
+    }
 
     stateMachine();
     updateIntakeData();

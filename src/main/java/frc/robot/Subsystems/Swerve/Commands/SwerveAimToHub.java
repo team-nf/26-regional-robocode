@@ -79,7 +79,7 @@ public class SwerveAimToHub extends Command {
     angleError = Math.atan2(Math.sin(angleError), Math.cos(angleError));
     double output = aimingPID.calculate(-angleError);
 
-    swerveDrivetrain.updateSwerveErrors(robotPose.plus(new Transform2d(0.0, 0.0, new Rotation2d(averageError))));
+    swerveDrivetrain.updateSwerveErrors(robotPose.plus(new Transform2d(0.0, 0.0, Rotation2d.fromRadians(averageError))));
     swerveDrivetrain.setSwerveState(SwerveState.AIMING);
     swerveDrivetrain.updateSwerveData();
     

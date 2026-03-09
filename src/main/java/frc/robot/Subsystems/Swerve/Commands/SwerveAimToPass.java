@@ -33,6 +33,7 @@ public class SwerveAimToPass extends Command {
 
   private double MaxAngularRate = DriveConstants.AIMING_MAX_ANGULAR_VELOCITY.in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
 
+  private double goalAngle;
   private double[] prevErrors = new double[10];
   private double averageError = 0.0;
 
@@ -44,12 +45,6 @@ public class SwerveAimToPass extends Command {
 
     aimingPID = swerveDrivetrain.getAimingPID();
     addRequirements(swerveDrivetrain);
-
-
-
-    //hubAimPose = new Pose2d(4.61, 4.1, new Rotation2d());
-
-    
   }
 
   // Called when the command is initially scheduled.
@@ -57,6 +52,8 @@ public class SwerveAimToPass extends Command {
   public void initialize() {
     aimingPID.reset();
     averageError = 1.0;
+
+    goalAngle = swerveDrivetrain.isRedAlliance() ? Math.toRadians(0) : Math.toRadians(180);
 
     prevErrors = new double[15];
     for (int i = 0; i < prevErrors.length; i++) {
@@ -69,24 +66,13 @@ public class SwerveAimToPass extends Command {
   public void execute() {
     Pose2d robotPose = swerveDrivetrain.getPose();
 
-    double goalAngle;
-
-    if(swerveDrivetrain.isRedAlliance())
-    {
-       goalAngle = Math.toRadians(0);
-    }
-    else
-    {
-      goalAngle = Math.toRadians(180);
-    }
-
     double angleError = goalAngle - robotPose.getRotation().getRadians();
 
     // Normalize angle error to the range [-pi, pi]
     angleError = Math.atan2(Math.sin(angleError), Math.cos(angleError));
     double output = aimingPID.calculate(-angleError);
 
-    swerveDrivetrain.updateSwerveErrors(robotPose.plus(new Transform2d(0.0, 0.0, new Rotation2d(averageError))));
+    swerveDrivetrain.updateSwerveErrors(robotPose.plus(new Transform2d(0.0, 0.0, Rotation2d.fromRadians(averageError))));
     swerveDrivetrain.setSwerveState(SwerveState.AIMING);
     swerveDrivetrain.updateSwerveData();
     
