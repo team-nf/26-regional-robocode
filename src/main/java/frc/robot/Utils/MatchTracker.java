@@ -27,7 +27,6 @@ public class MatchTracker {
             firstPhaseStatus = "Empty";
             publishStatus();
             return;
-        
         }
 
         if (DriverStation.isAutonomousEnabled())
@@ -53,7 +52,6 @@ public class MatchTracker {
         // We're teleop enabled, compute.
         matchTime = DriverStation.getMatchTime();
         String gameData = DriverStation.getGameSpecificMessage();
-        // If we have no game data, we cannot compute, assume hub is active, as its likely early in teleop.
         if (gameData.isEmpty()) {
             isBlueHubActive = true;
             isRedHubActive = true;
@@ -62,65 +60,51 @@ public class MatchTracker {
             publishStatus();
             return;
         }
+
         boolean redInactiveFirst = false;
         switch (gameData.charAt(0)) {
             case 'R' -> redInactiveFirst = true;
             case 'B' -> redInactiveFirst = false;
             default -> {
-            // If we have invalid game data, assume hub is active.
-            isBlueHubActive = true;
-            isRedHubActive = true;
-            firstPhaseStatus = "InvalidData";
-            publishStatus();
-            return;
+                isBlueHubActive = true;
+                isRedHubActive = true;
+                firstPhaseStatus = "InvalidData";
+                publishStatus();
+                return;
             }
         }
 
         firstPhaseStatus = (redInactiveFirst ? "BlueFirst" : "RedFirst");
+        computePhaseFromMatchTime(redInactiveFirst);
+        publishStatus();
+    }
 
+    private void computePhaseFromMatchTime(boolean redInactiveFirst) {
         if (matchTime > 130) {
-            // Transition shift, hub is active.
             isBlueHubActive = true;
             isRedHubActive = true;
             activePhaseDuration = matchTime - 130;
-            publishStatus();
-            return;
         } else if (matchTime > 105) {
-            // Shift 1
             isBlueHubActive = redInactiveFirst;
             isRedHubActive = !redInactiveFirst;
             activePhaseDuration = matchTime - 105;
-            publishStatus();
-            return;
         } else if (matchTime > 80) {
-            // Shift 2
             isBlueHubActive = !redInactiveFirst;
             isRedHubActive = redInactiveFirst;
             activePhaseDuration = matchTime - 80;
-            publishStatus();
-            return;
         } else if (matchTime > 55) {
-            // Shift 3
             isBlueHubActive = redInactiveFirst;
             isRedHubActive = !redInactiveFirst;
             activePhaseDuration = matchTime - 55;
-            publishStatus();
-            return;
         } else if (matchTime > 30) {
-            // Shift 4
             isBlueHubActive = !redInactiveFirst;
             isRedHubActive = redInactiveFirst;
             activePhaseDuration = matchTime - 30;
-            publishStatus();
-            return;
         } else {
-            // End game, hub always active.
             isBlueHubActive = true;
             isRedHubActive = true;
             activePhaseDuration = matchTime;
-            publishStatus();
-            return;
-        } 
+        }
     }
 
     public void publishStatus()
