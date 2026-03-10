@@ -20,10 +20,6 @@ public class FeederRealHardware implements FeederHardware {
     private final VelocityVoltage feederVelocityControl;
 
     private double feederVelocity = 0;
-    private double feederMotorVelocity = 0;
-    private double feederVoltage = 0;
-    private double feederCurrent = 0;
-    private double feederReference = 0.0;
     private double feederError = 0.0;
     private double testFeederGoal = 0;
 
@@ -88,10 +84,6 @@ public class FeederRealHardware implements FeederHardware {
     @Override
     public void updateVariables() {
         feederVelocity = feederMotor.getVelocity().getValue().div(FeederConstants.FEEDER_GEAR_REDUCTION).in(RotationsPerSecond);
-        //feederMotorVelocity = feederMotor.getVelocity().getValue();
-        //feederVoltage = feederMotor.getMotorVoltage().getValue();
-        //feederCurrent = feederMotor.getStatorCurrent().getValue();
-        //feederReference = feederMotor.getClosedLoopReference().getValue();
         feederError = feederMotor.getClosedLoopError().getValue();
     }
 
@@ -105,10 +97,6 @@ public class FeederRealHardware implements FeederHardware {
         builder.setSmartDashboardType("FeederHardware");
 
     builder.addDoubleProperty("Feeder Velocity (RPM)", () -> TelemetryConstants.roundTelemetry(feederVelocity * 60), null);
-    builder.addDoubleProperty("Feeder Motor Velocity (RPM)", () -> TelemetryConstants.roundTelemetry(feederMotorVelocity * 60), null);
-    builder.addDoubleProperty("Feeder Voltage (V)", () -> TelemetryConstants.roundTelemetry(feederVoltage), null);
-    builder.addDoubleProperty("Feeder Current (A)", () -> TelemetryConstants.roundTelemetry(feederCurrent), null);
-    builder.addDoubleProperty("Feeder Reference", () -> TelemetryConstants.roundTelemetry(feederReference), null);
     builder.addDoubleProperty("Feeder Error", () -> TelemetryConstants.roundTelemetry(feederError), null);
     
         builder.addDoubleProperty("Test Feeder Goal (RPM)", () -> testFeederGoal * 60,

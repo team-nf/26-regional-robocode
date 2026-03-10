@@ -25,19 +25,9 @@ public class IntakeRealHardware implements IntakeHardware {
     private final PositionVoltage intakeArmPositionControl;
 
     private double intakeVelocity = 0;
-    private double intakeMotorVelocity = 0;
-    private double intakeVoltage = 0;
-    private double intakeCurrent = 0;
-    private double intakeReference = 0.0;
-    private double intakeError = 0.0;
     private double testIntakeGoal = 0;
 
     private double intakeArmPosition = IntakeConstants.INTAKE_ARM_START_ANGLE.in(Rotation);
-    private double intakeArmMotorPosition = IntakeConstants.INTAKE_ARM_START_ANGLE.times(IntakeConstants.INTAKE_ARM_GEAR_REDUCTION).in(Rotation);
-    private double intakeArmMotorVoltage = 0;
-    private double intakeArmMotorCurrent = 0;
-    private double intakeArmReference = 0.0;
-    private double intakeArmError = 0.0;
     private double testIntakeArmGoal = 0;
 
     public IntakeRealHardware() {
@@ -158,18 +148,7 @@ public class IntakeRealHardware implements IntakeHardware {
     @Override
     public void updateVariables() {
         intakeVelocity = intakeMotor.getVelocity().getValue().div(IntakeConstants.INTAKE_GEAR_REDUCTION).in(RotationsPerSecond);
-        //intakeMotorVelocity = intakeMotor.getVelocity().getValue();
-        //intakeVoltage = intakeMotor.getMotorVoltage().getValue();
-        //intakeCurrent = intakeMotor.getStatorCurrent().getValue();
-        //intakeReference = intakeMotor.getClosedLoopReference().getValue();
-        //intakeError = intakeMotor.getClosedLoopError().getValue();
-
         intakeArmPosition = intakeArmMotor.getPosition().getValue().div(IntakeConstants.INTAKE_ARM_GEAR_REDUCTION).in(Rotations);
-        //intakeArmMotorPosition = intakeArmMotor.getRotorPosition().getValue();
-        //intakeArmMotorVoltage = intakeArmMotor.getMotorVoltage().getValue();
-        //intakeArmMotorCurrent = intakeArmMotor.getStatorCurrent().getValue();
-        //intakeArmReference = intakeArmMotor.getClosedLoopReference().getValue();
-        //intakeArmError = intakeArmMotor.getClosedLoopError().getValue();
     }
 
     @Override
@@ -182,17 +161,7 @@ public class IntakeRealHardware implements IntakeHardware {
         builder.setSmartDashboardType("IntakeHardware");
 
     builder.addDoubleProperty("Intake Velocity (RPM)", () -> TelemetryConstants.roundTelemetry(intakeVelocity*60), null);
-    builder.addDoubleProperty("Intake Motor Velocity (RPM)", () -> TelemetryConstants.roundTelemetry(intakeMotorVelocity*60), null);
-    builder.addDoubleProperty("Intake Voltage (V)", () -> TelemetryConstants.roundTelemetry(intakeVoltage), null);
-    builder.addDoubleProperty("Intake Current (A)", () -> TelemetryConstants.roundTelemetry(intakeCurrent), null);
-    builder.addDoubleProperty("Intake Reference", () -> TelemetryConstants.roundTelemetry(intakeReference), null);
-    builder.addDoubleProperty("Intake Error", () -> TelemetryConstants.roundTelemetry(intakeError), null);
     builder.addDoubleProperty("Intake Arm Position (deg)", () -> TelemetryConstants.roundTelemetry(intakeArmPosition), null);
-    builder.addDoubleProperty("Intake Arm Motor Position (deg)", () -> TelemetryConstants.roundTelemetry(intakeArmMotorPosition), null);
-    builder.addDoubleProperty("Intake Arm Motor Voltage (V)", () -> TelemetryConstants.roundTelemetry(intakeArmMotorVoltage), null);
-    builder.addDoubleProperty("Intake Arm Motor Current (A)", () -> TelemetryConstants.roundTelemetry(intakeArmMotorCurrent), null);
-    builder.addDoubleProperty("Intake Arm Reference", () -> TelemetryConstants.roundTelemetry(intakeArmReference*360), null);
-    builder.addDoubleProperty("Intake Arm Error", () -> TelemetryConstants.roundTelemetry(intakeArmError*360), null);
 
         builder.addDoubleProperty("Test Intake Goal RPM", () -> testIntakeGoal*60,
             (value) -> testIntakeGoal = (value / 60.0));
