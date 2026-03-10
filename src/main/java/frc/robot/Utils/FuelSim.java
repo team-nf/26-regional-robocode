@@ -101,7 +101,6 @@ public class FuelSim {
             if (Math.abs(vel.getZ()) < 0.05 && pos.getZ() <= FUEL_RADIUS + 0.03) {
                 vel = new Translation3d(vel.getX(), vel.getY(), 0);
                 vel = vel.times(1 - FRICTION * PERIOD / subticks);
-                // pos = new Translation3d(pos.getX(), pos.getY(), FUEL_RADIUS);
             }
             handleFieldCollisions();
         }
