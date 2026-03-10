@@ -5,16 +5,11 @@ import static edu.wpi.first.units.Units.Meters;
 import java.util.function.Supplier;
 
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructArrayPublisher;
-import edu.wpi.first.networktables.StructPublisher;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.Dimensions;
-import frc.robot.Constants.PoseConstants;
 import frc.robot.Subsystems.Swerve.CommandSwerveDrivetrain;
 
 public class SwerveFieldContactSim {

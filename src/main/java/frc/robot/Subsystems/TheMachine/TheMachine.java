@@ -411,7 +411,6 @@ public class TheMachine {
 
   public void periodic() {
     matchTracker.updateMatchTracker();
-    //updateLeds();
     
     if (TelemetryConstants.SHOULD_THEMACHINE_DATA_COMMUNICATE)
     {
