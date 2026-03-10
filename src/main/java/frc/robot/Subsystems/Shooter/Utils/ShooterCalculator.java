@@ -12,7 +12,6 @@ import edu.wpi.first.units.measure.*;
 import frc.robot.Constants.ShooterConstants;
 import frc.robot.Subsystems.Swerve.Utils.SwerveControlData;
 
-/** Add your docs here. */
 public class ShooterCalculator {
 
     Supplier<SwerveControlData> swerveDataSupplier;
@@ -20,21 +19,6 @@ public class ShooterCalculator {
     public ShooterCalculator(Supplier<SwerveControlData> swerveDataSupplier) {
         this.swerveDataSupplier = swerveDataSupplier;
     }
-
-    public double calculateFlywheelSpeed(double distanceToTargetMeters, double launchAngleDegrees, double initialHeightMeters, double targetHeightMeters) {
-        // Placeholder implementation
-        // Replace with actual physics calculations to determine the required wheel speed
-        double requiredSpeed = Math.sqrt(9.81 * distanceToTargetMeters); // Simplified example
-        return requiredSpeed;
-    }
-
-    public double calculateHoodAngle(double distanceToTargetMeters, double initialHeightMeters, double targetHeightMeters) {
-        // Placeholder implementation
-        // Replace with actual calculations to determine the required hood angle
-        double angle = Math.toDegrees(Math.atan2(targetHeightMeters - initialHeightMeters, distanceToTargetMeters));
-        return angle/360;
-    }
-
 
     public double calculateFlywheelSpeedFromCurrentPose()
     {

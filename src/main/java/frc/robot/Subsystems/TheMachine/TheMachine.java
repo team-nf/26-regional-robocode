@@ -83,8 +83,6 @@ public class TheMachine {
 
   private LEDController leftLed;
 
-  private boolean hasLotsOfFuel = true;
-
   private boolean intakeWithOffset = false;
 
   private MatchTracker matchTracker;
@@ -121,8 +119,6 @@ public class TheMachine {
     theMachineGetReadyActionPas = TheMachineGetReadyActionPas.get(this);
 
     leftLed = new LEDController(0, 30);
-
-    SmartDashboard.putBoolean("Conf/HasLotsOfFuel", hasLotsOfFuel);
 
     matchTracker = new MatchTracker();
   }
@@ -394,11 +390,6 @@ public class TheMachine {
     leftLed.setMultiple2(0.5,1, 0, 255, 0);
   }
 
-  public boolean isThereLotsOfFuel()
-  {
-    return hasLotsOfFuel;
-  }
-
   public boolean isIntakeWithoutOffset()
   {
     return !intakeWithOffset;
@@ -423,7 +414,5 @@ public class TheMachine {
     {
       calculateSubsytemPoses();
     }
-
-    hasLotsOfFuel = SmartDashboard.getBoolean("Conf/HasLotsOfFuel", hasLotsOfFuel);
   }
 }
