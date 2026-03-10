@@ -27,8 +27,6 @@ import frc.robot.Subsystems.Swerve.CommandSwerveDrivetrain;
 // information, see:
 // https://docs.wpilib.org/en/stable/docs/software/commandbased/convenience-features.html
 public class SwerveGetIntoShootAreaCommand extends ParallelCommandGroup {
-  /** Creates a new SwerveGetIntoShootArea. */
-
   private CommandSwerveDrivetrain drivetrain;
   private Pose2d hubAimPose;
   private boolean isBlueAlliance;

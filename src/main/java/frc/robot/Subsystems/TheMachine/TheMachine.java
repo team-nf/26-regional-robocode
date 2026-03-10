@@ -57,7 +57,7 @@ import frc.robot.Subsystems.TheMachine.Utils.TheMachineControlData;
 import frc.robot.Utils.MatchTracker;
 
 public class TheMachine {
-  /** Creates a new TheMachine. */
+
 
   private TheMachineControlData theMachineData;
 

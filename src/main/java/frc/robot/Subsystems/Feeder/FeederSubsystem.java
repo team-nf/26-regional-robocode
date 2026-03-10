@@ -35,7 +35,6 @@ public class FeederSubsystem extends SubsystemBase {
   public final Command feederReverseAction;
   public final Command feederTestAction;
 
-  /** Creates a new FeederSubsystem. */
   public FeederSubsystem() {
     if (Utils.isSimulation()) {
         feederHardware = new FeederSimHardware();

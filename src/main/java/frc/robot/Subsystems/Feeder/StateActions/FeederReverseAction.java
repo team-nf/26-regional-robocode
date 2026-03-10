@@ -8,10 +8,8 @@ import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.States.FeederStates.FeederControlState;
 import frc.robot.Subsystems.Feeder.FeederSubsystem;
 
-/* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class FeederReverseAction extends Command {
-  /** Creates a new ShooterIdleAction. */
-  
+
   private final FeederSubsystem feederSubsystem;
 
   public FeederReverseAction(FeederSubsystem feederSubsystem) {

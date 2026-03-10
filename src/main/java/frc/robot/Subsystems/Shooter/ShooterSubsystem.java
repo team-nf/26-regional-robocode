@@ -36,7 +36,6 @@ import frc.robot.Subsystems.Shooter.Utils.ShooterCalculator;
 import frc.robot.Subsystems.Shooter.Utils.ShooterControlData;
 
 public class ShooterSubsystem extends SubsystemBase {
-  /** Creates a new ShooterSubsystem. */
   public final ShooterHardware shooterHardware;
   public final ShooterControlData shooterData;
   public final ShooterCalculator shooterCalculator;

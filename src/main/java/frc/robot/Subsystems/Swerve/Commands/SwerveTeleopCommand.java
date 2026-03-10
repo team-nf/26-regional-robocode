@@ -16,9 +16,7 @@ import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 
-/* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class SwerveTeleopCommand extends Command {
-  /** Creates a new SwerveTeleopCommand. */
 
   private static final double MaxSpeed = 0.75 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond);
   private static final double MaxAngularRate = RotationsPerSecond.of(1).in(RadiansPerSecond);
