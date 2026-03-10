@@ -9,9 +9,6 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants.TunerConstants;
 import frc.robot.Constants.States.SwerveStates.SwerveState;
 import frc.robot.Subsystems.Swerve.CommandSwerveDrivetrain;
-import edu.wpi.first.units.measure.*;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.XboxController;
 
 import static edu.wpi.first.units.Units.*;
 
@@ -23,8 +20,8 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 public class SwerveTeleopCommand extends Command {
   /** Creates a new SwerveTeleopCommand. */
 
-  private double MaxSpeed = 0.75 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
-  private double MaxAngularRate = RotationsPerSecond.of(1).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
+  private static final double MaxSpeed = 0.75 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond);
+  private static final double MaxAngularRate = RotationsPerSecond.of(1).in(RadiansPerSecond);
 
   private SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
             .withDeadband(MaxSpeed * 0.1).withRotationalDeadband(MaxAngularRate * 0.1) // Add a 10% deadband
