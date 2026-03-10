@@ -18,16 +18,14 @@ import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.States.SwerveStates.SwerveState;
 import frc.robot.Subsystems.Swerve.CommandSwerveDrivetrain;
 
-/* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class SwerveAimToPass extends Command {
-  /** Creates a new SwerveAimToHub. */
 
   private final CommandSwerveDrivetrain swerveDrivetrain;
 
   private PIDController aimingPID;
 
   private double goalAngle;
-  private double[] prevErrors = new double[15];
+  private double[] prevErrors = new double[DriveConstants.AIMING_ERROR_BUFFER_SIZE];
   private double averageError = 0.0;
 
   private SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
@@ -48,7 +46,7 @@ public class SwerveAimToPass extends Command {
 
     goalAngle = swerveDrivetrain.isRedAlliance() ? Math.toRadians(0) : Math.toRadians(180);
 
-    prevErrors = new double[15];
+    prevErrors = new double[DriveConstants.AIMING_ERROR_BUFFER_SIZE];
     for (int i = 0; i < prevErrors.length; i++) {
       prevErrors[i] = 1.0;
     }
@@ -84,7 +82,7 @@ public class SwerveAimToPass extends Command {
     }
     averageError = errorSum / prevErrors.length;
 
-    swerveDrivetrain.setIsAimed(averageError < DriveConstants.AIMING_TOLERANCE_RADIANS*3);
+    swerveDrivetrain.setIsAimed(averageError < DriveConstants.PASS_AIMING_TOLERANCE_RADIANS);
   }
 
   // Called once the command ends or is interrupted.
