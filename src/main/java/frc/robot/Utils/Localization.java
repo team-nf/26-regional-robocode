@@ -8,16 +8,15 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.Constants.States.SwerveStates.SwerveState;
 import frc.robot.Subsystems.Swerve.CommandSwerveDrivetrain;
-import frc.robot.Utils.LimelightHelpers;
-
 
 public class Localization {
-    private static final Matrix<N3, N1> MT1_STD_DEVS = VecBuilder.fill(0.5, 0.5, 9999999);
+    private static final Matrix<N3, N1> MT2_STD_DEVS = VecBuilder.fill(0.5, 0.5, 9999999);
 
-    CommandSwerveDrivetrain drivetrain;
+    private final CommandSwerveDrivetrain drivetrain;
 
-    private boolean isMode1Set = false;
-    private boolean isLLReady = false;
+    private boolean leftEnabled = true;
+    private boolean rightEnabled = true;
+    private boolean disabledLocoEnabled = true;
 
     public Localization(CommandSwerveDrivetrain drivetrain) {
         this.drivetrain = drivetrain;
@@ -27,109 +26,68 @@ public class Localization {
         SmartDashboard.putBoolean("Conf/DisabledLocoEnabled", true);
     }
 
-    public void addVisionMeasurementMT1() {
-    double robotYaw = drivetrain.getGyroHeading();
-    LimelightHelpers.SetRobotOrientation("limelight-left", robotYaw, 0.0, 0.0, 0.0, 0.0, 0.0);
-    LimelightHelpers.SetRobotOrientation("limelight-right", robotYaw, 0.0, 0.0, 0.0, 0.0, 0.0);
-
-    LimelightHelpers.PoseEstimate limelightMeasurementLeft = LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight-left");
-    LimelightHelpers.PoseEstimate limelightMeasurementRight = LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight-right");
-
-    boolean doRejectUpdate = false;
-    boolean doRejectLeft = false;
-    boolean doRejectRight = false;
-
- if(drivetrain.swerveDataSupplier().get().swerveControlState == SwerveState.AIMING && DriverStation.isAutonomous()) doRejectUpdate = true;
-
-
-    if(Math.abs(drivetrain.getGyroRate()) > 360)
-    {
-        doRejectUpdate = true;
+    public void updateConfig() {
+        leftEnabled = SmartDashboard.getBoolean("Conf/LL-Left_Enabled", true);
+        rightEnabled = SmartDashboard.getBoolean("Conf/LL-Right_Enabled", true);
+        disabledLocoEnabled = SmartDashboard.getBoolean("Conf/DisabledLocoEnabled", true);
     }
 
-    if(limelightMeasurementLeft != null)
-    {
-        if(limelightMeasurementLeft.tagCount < 1)
-            {
-                doRejectLeft = true;
-            }
-
-        if(limelightMeasurementLeft.avgTagDist > 3.5)
-            {
-                doRejectLeft = true;
-            }
+    private boolean shouldRejectMeasurement(LimelightHelpers.PoseEstimate estimate, double maxDist) {
+        if (estimate == null) return true;
+        if (estimate.tagCount < 1) return true;
+        if (estimate.avgTagDist > maxDist) return true;
+        return false;
     }
-    else doRejectLeft = true;
 
-    if(limelightMeasurementRight != null)
-    {
-    if(limelightMeasurementRight.tagCount < 1)
-        {
-            doRejectRight = true;
-        }
-        if(limelightMeasurementRight.avgTagDist > 3.5)
-            {
-                doRejectRight = true;
-            }
-    }
-    else doRejectRight = true;
+    public void addVisionMeasurementMT2() {
+        double robotYaw = drivetrain.getGyroHeading();
+        LimelightHelpers.SetRobotOrientation("limelight-left", robotYaw, 0.0, 0.0, 0.0, 0.0, 0.0);
+        LimelightHelpers.SetRobotOrientation("limelight-right", robotYaw, 0.0, 0.0, 0.0, 0.0, 0.0);
 
+        LimelightHelpers.PoseEstimate limelightMeasurementLeft = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("limelight-left");
+        LimelightHelpers.PoseEstimate limelightMeasurementRight = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("limelight-right");
 
-    if(!doRejectUpdate)
-    {
-        if(!doRejectLeft && SmartDashboard.getBoolean("Conf/LL-Left_Enabled", true))
-        {
-            drivetrain.setVisionMeasurementStdDevs(MT1_STD_DEVS);
+        if (drivetrain.swerveDataSupplier().get().swerveControlState == SwerveState.AIMING && DriverStation.isAutonomous()) return;
+        if (Math.abs(drivetrain.getGyroRate()) > 360) return;
 
+        if (!shouldRejectMeasurement(limelightMeasurementLeft, 3.5) && leftEnabled) {
+            drivetrain.setVisionMeasurementStdDevs(MT2_STD_DEVS);
             drivetrain.addVisionMeasurement(
-            limelightMeasurementLeft.pose,
-            limelightMeasurementLeft.timestampSeconds
+                limelightMeasurementLeft.pose,
+                limelightMeasurementLeft.timestampSeconds
             );
         }
 
-        if(!doRejectRight && SmartDashboard.getBoolean("Conf/LL-Right_Enabled", true))
-        {
-            drivetrain.setVisionMeasurementStdDevs(MT1_STD_DEVS);
+        if (!shouldRejectMeasurement(limelightMeasurementRight, 3.5) && rightEnabled) {
+            drivetrain.setVisionMeasurementStdDevs(MT2_STD_DEVS);
             drivetrain.addVisionMeasurement(
-            limelightMeasurementRight.pose,
-            limelightMeasurementRight.timestampSeconds
+                limelightMeasurementRight.pose,
+                limelightMeasurementRight.timestampSeconds
             );
         }
     }
-    }
 
-    public void disabledPeriodic()
-    {
-        isMode1Set = true;
-
-        if (SmartDashboard.getBoolean("Conf/DisabledLocoEnabled", true)) {
+    public void disabledPeriodic() {
+        updateConfig();
+        if (disabledLocoEnabled) {
             resetWithMT1();
         }
     }
 
-    public void enabledPeriodic()
-    {
-        if(!isLLReady && isMode1Set)
-        {
-            isLLReady = true;
-        }
-
-        if(isLLReady) addVisionMeasurementMT1();
+    public void enabledPeriodic() {
+        addVisionMeasurementMT2();
     }
 
-    public void resetWithMT1()
-    {
+    public void resetWithMT1() {
         double robotYaw = drivetrain.getGyroHeading();
         LimelightHelpers.SetRobotOrientation("limelight-right", robotYaw, 0.0, 0.0, 0.0, 0.0, 0.0);
 
         LimelightHelpers.PoseEstimate limelightMeasurementRight = LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight-right");
 
-        if(limelightMeasurementRight != null && limelightMeasurementRight.tagCount > 0)
-        {
+        if (limelightMeasurementRight != null && limelightMeasurementRight.tagCount > 0) {
             if (limelightMeasurementRight.avgTagDist < 3.0) {
                 drivetrain.resetPose(limelightMeasurementRight.pose);
             }
         }
-
     }
 }

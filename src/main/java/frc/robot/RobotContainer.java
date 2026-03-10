@@ -43,7 +43,6 @@ import frc.robot.Subsystems.Swerve.CommandSwerveDrivetrain;
 import frc.robot.Subsystems.TheMachine.TheMachine;
 import frc.robot.Utils.FuelSim;
 import frc.robot.Utils.HopperSim;
-import frc.robot.Utils.Localization;
 import frc.robot.Utils.MatchTrackerSim;
 import frc.robot.Utils.ShooterSim;
 import frc.robot.Utils.SwerveFieldContactSim;
