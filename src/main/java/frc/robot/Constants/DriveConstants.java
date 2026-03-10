@@ -10,7 +10,6 @@ import com.pathplanner.lib.path.PathConstraints;
 
 import edu.wpi.first.units.measure.AngularVelocity;
 
-/** Add your docs here. */
 public class DriveConstants {
     public static final int DRIVER_CONTROLLER_PORT = 0;
 

@@ -6,7 +6,6 @@ package frc.robot.Constants;
 
 import frc.robot.Robot;
 
-/** Add your docs here. */
 public class TelemetryConstants {
     public static boolean SHOULD_SHOOTER_HARDWARE_COMMUNICATE = false;
     public static boolean SHOULD_SHOOTER_CONTROL_COMMUNICATE = false;

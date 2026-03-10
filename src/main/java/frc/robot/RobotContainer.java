@@ -299,9 +299,5 @@ public class RobotContainer {
         // Telemetry for the Command Scheduler
         SmartDashboard.putData("Command Scheduler", CommandScheduler.getInstance());
      }
-
-
-    //updateTelemetrySettings();
-
     }
 }

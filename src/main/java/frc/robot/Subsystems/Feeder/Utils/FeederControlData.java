@@ -14,7 +14,6 @@ import frc.robot.Constants.States.FeederStates.FeederRollerState;
 import frc.robot.Constants.TelemetryConstants;
 import static edu.wpi.first.units.Units.*;
 
-/** Add your docs here. */
 public class FeederControlData implements Sendable{
 
     public FeederRollerState feederRollerState = FeederRollerState.ZERO;

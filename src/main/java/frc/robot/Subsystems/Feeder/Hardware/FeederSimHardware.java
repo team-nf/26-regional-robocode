@@ -18,7 +18,6 @@ import frc.robot.Constants.FeederConstants;
 
 import static edu.wpi.first.units.Units.*;
 
-/** Add your docs here. */
 public class FeederSimHardware extends FeederRealHardware {
 
     private final DCMotor feederDcMotor;

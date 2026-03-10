@@ -338,14 +338,6 @@ public class FuelSim {
             }
         }
 
-        // DEBUG: Log XZ lines
-        // Translation3d[][] lines = new Translation3d[FIELD_XZ_LINE_STARTS.length][2];
-        // for (int i = 0; i < FIELD_XZ_LINE_STARTS.length; i++) {
-        //     lines[i][0] = FIELD_XZ_LINE_STARTS[i];
-        //     lines[i][1] = FIELD_XZ_LINE_ENDS[i];
-        // }
-
-        // Logger.recordOutput("Fuel Simulation/Lines (debug)", lines);
     }
 
     private StructArrayPublisher<Translation3d> fuelPublisher = NetworkTableInstance.getDefault()
@@ -679,35 +671,6 @@ public class FuelSim {
                     fuel,
                     new Translation3d(center.getX() - SIDE / 2, center.getY() - SIDE / 2, 0),
                     new Translation3d(center.getX() + SIDE / 2, center.getY() + SIDE / 2, ENTRY_HEIGHT - 0.1));
-            // if (fuel.pos.getZ() > ENTRY_HEIGHT - 0.1) return new Translation2d(); // above hub
-            // double distanceToLeft = center.getX() - SIDE / 2 - FUEL_RADIUS - fuel.pos.getX();
-            // double distanceToRight = fuel.pos.getX() - center.getX() - SIDE / 2 - FUEL_RADIUS;
-            // double distanceToTop = center.getY() - SIDE / 2 - FUEL_RADIUS - fuel.pos.getY();
-            // double distanceToBottom = fuel.pos.getY() - center.getY() - SIDE / 2 - FUEL_RADIUS;
-
-            // // not inside hub
-            // if (distanceToLeft > 0 || distanceToRight > 0 || distanceToTop > 0 || distanceToBottom > 0)
-            //     return new Translation2d();
-
-            // // find minimum distance to side and send corresponding collision response
-            // if (fuel.pos.getX() < center.getX() - SIDE / 2
-            //         || (distanceToLeft >= distanceToRight
-            //                 && distanceToLeft >= distanceToTop
-            //                 && distanceToLeft >= distanceToBottom)) {
-            //     return new Translation2d(distanceToLeft, 0);
-            // } else if (fuel.pos.getX() >= center.getX() + SIDE / 2
-            //         || (distanceToRight >= distanceToLeft
-            //                 && distanceToRight >= distanceToTop
-            //                 && distanceToRight >= distanceToBottom)) {
-            //     return new Translation2d(-distanceToRight, 0);
-            // } else if (fuel.pos.getY() > center.getY() + SIDE / 2
-            //         || (distanceToTop >= distanceToLeft
-            //                 && distanceToTop >= distanceToRight
-            //                 && distanceToTop >= distanceToBottom)) {
-            //     return new Translation2d(0, -distanceToTop);
-            // } else {
-            //     return new Translation2d(0, distanceToBottom);
-            // }
         }
 
         private double fuelHitNet(Fuel fuel) {
