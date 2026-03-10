@@ -47,9 +47,7 @@ import frc.robot.Subsystems.TheMachine.StateRequests.TheMachineIdleDeployedReque
 import frc.robot.Subsystems.TheMachine.StateRequests.TheMachineIdleRequest;
 import frc.robot.Subsystems.TheMachine.StateRequests.TheMachineIdleRetractedRequest;
 import frc.robot.Subsystems.TheMachine.StateRequests.TheMachineIntakeRequest;
-import frc.robot.Subsystems.TheMachine.StateRequests.TheMachineIntakeToggledRequest;
 import frc.robot.Subsystems.TheMachine.StateRequests.TheMachineNoneRequest;
-import frc.robot.Subsystems.TheMachine.StateRequests.TheMachinePreviousStateRequest;
 import frc.robot.Subsystems.TheMachine.StateRequests.TheMachineReverseRequest;
 import frc.robot.Subsystems.TheMachine.StateRequests.TheMachineShootRequest;
 import frc.robot.Subsystems.TheMachine.StateRequests.TheMachineTestRequest;
@@ -234,11 +232,6 @@ public class TheMachine {
     return intakeSubsystem.testRequest();
   }
 
-  public InstantCommand intakeChangeOffsetCommand()
-  {
-    return new InstantCommand(() -> changeIntakeMode());
-  }
-
   // Wait for Commands
   public WaitUntilCommand waitForShooter()
   {
@@ -253,10 +246,6 @@ public class TheMachine {
   public WaitUntilCommand waitForIntakeRetract()
   {
     return intakeSubsystem.waitForIntakeToBeRetracted();
-  }
-
-  public Command previousStateRequest() {
-    return new TheMachinePreviousStateRequest(this);
   }
 
   public Command zeroRequest(){
@@ -277,10 +266,6 @@ public class TheMachine {
 
   public Command intakeRequest() {
       return new TheMachineIntakeRequest(this);
-  }
-
-    public InstantCommand intakeToggledRequest() {
-      return new TheMachineIntakeToggledRequest(this);
   }
 
   public Command shootRequest() {

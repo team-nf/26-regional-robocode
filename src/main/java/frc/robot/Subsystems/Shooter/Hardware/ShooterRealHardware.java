@@ -16,7 +16,6 @@ import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
-import edu.wpi.first.wpilibj.motorcontrol.Talon;
 import frc.robot.Constants.TelemetryConstants;
 import frc.robot.Constants.ShooterConstants;
 
@@ -48,7 +47,7 @@ public class ShooterRealHardware implements ShooterHardware {
     private double hoodPosition = 0;
     private double hoodError = 0.0;
 
-    private double testFlywheelGoal= 35;
+    private double testFlywheelGoal = 35;
     private double testHoodGoal = 20.0/360.0;
 
     public ShooterRealHardware() {

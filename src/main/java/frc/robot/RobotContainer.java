@@ -25,7 +25,6 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants.Dimensions;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.HopperConstants;
-import frc.robot.Constants.PoseConstants;
 import frc.robot.Constants.TunerConstants;
 import frc.robot.Constants.States.FeederStates.FeederControlState;
 import frc.robot.Constants.States.HopperStates.HopperControlState;
