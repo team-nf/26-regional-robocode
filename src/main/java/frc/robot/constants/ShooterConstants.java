@@ -34,8 +34,8 @@ public class ShooterConstants {
     public static final int HOOD_MOTOR_ID = 55;
 
     // Shooter Math Constants
-    public static final double SHOOTER_VELOCITY_TRANSFER_COEFFICIENT = 0.85; // in meters (2 inches)
-    public static final double SHOOTER_VELOCITY_SIM_TRANSFER_COEFFICIENT = 0.62; // in meters (2 inches)
+    public static final double SHOOTER_VELOCITY_TRANSFER_COEFFICIENT = 0.81; // in meters (2 inches)
+    public static final double SHOOTER_VELOCITY_SIM_TRANSFER_COEFFICIENT = 0.675; // in meters (2 inches)
 
     // Configs
     public static final int NUMBER_OF_FLYWHEEL_MOTORS = 2;
@@ -66,8 +66,8 @@ public class ShooterConstants {
 
     public static final CurrentLimitsConfigs SHOOTER_CURRENT_LIMITS = new CurrentLimitsConfigs()
         .withSupplyCurrentLimitEnable(true)
-        .withSupplyCurrentLimit(38)
-        .withStatorCurrentLimit(38);
+        .withSupplyCurrentLimit(30)
+        .withStatorCurrentLimit(30);
 
     public static final TalonFXConfiguration SHOOTER_CONFIG = new TalonFXConfiguration()
             .withSlot0(SHOOTER_PID_CONFIGS)

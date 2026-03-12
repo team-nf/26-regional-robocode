@@ -14,6 +14,7 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import frc.robot.constants.Dimensions;
+import frc.robot.constants.ShooterConstants;
 import frc.robot.constants.SimConstants;
 
 /** Add your docs here. */
@@ -77,7 +78,7 @@ public class ShooterSim {
                     new Rotation3d(robotPoseSupplier.get().getRotation()));
 
             double launchAngle = Math.PI / 2 - Math.toRadians((hoodAngle)*360+18);
-                double fuelVelocity = shooterRPS * 2 * Math.PI * SimConstants.SIMULATION_VELOCITY_TRANSFER_COEFFICIENT;
+            double fuelVelocity = shooterRPS * 2 * Math.PI * SimConstants.SIMULATION_VELOCITY_TRANSFER_COEFFICIENT * ShooterConstants.FLYWHEEL_RADIUS.in(Meters);
 
             Pose3d leftFuelShootPose = new Pose3d(
                 Dimensions.LEFT_SHOOTER_POSE.getX() + Dimensions.FUEL_SHOOTER_OFFSET.in(Meters) * Math.cos(hoodAngle*2*Math.PI),

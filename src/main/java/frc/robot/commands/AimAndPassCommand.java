@@ -25,6 +25,7 @@ import frc.robot.constants.States.SwerveStates.SwerveState;
 import frc.robot.constants.TunerConstants;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.utils.Container;
+import frc.robot.utils.ShooterCalculator;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class AimAndPassCommand extends Command {
@@ -89,7 +90,7 @@ public class AimAndPassCommand extends Command {
     angleError = targetAngle - robotPose.getRotation().getRadians();
     angleError = Math.atan2(Math.sin(angleError), Math.cos(angleError));
 
-    if(DriverStation.getAlliance().get() == Alliance.Red) targetAngle += Math.PI;
+    if(!Container.isBlue) targetAngle += Math.PI;
 
     swerveDrivetrain.setControl(
         drive.withVelocityX(-driverController.getLeftY() * MaxSpeed) // Drive forward with negative Y (forward)
@@ -97,10 +98,13 @@ public class AimAndPassCommand extends Command {
             .withTargetDirection(new Rotation2d(targetAngle))// Drive counterclockwise with negative X (left)
     );
 
+    double velocityRPS = ShooterCalculator.calculatePassSpeedFromCurrentPose(robotPose);
+    double hoodAngle = ShooterCalculator.calculatePassHoodAngle();
+
     if (Math.abs(angleError) < DriveConstants.AIMING_TOLERANCE_RADIANS) {
-      theMachine.pass();
+      theMachine.pass(velocityRPS, hoodAngle);
     } else {
-      theMachine.getReadyPass();
+      theMachine.getReadyPass(velocityRPS, hoodAngle);
     }
  
   }

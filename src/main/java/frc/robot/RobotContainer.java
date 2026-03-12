@@ -22,14 +22,15 @@ import frc.robot.subsystems.ShooterSubsystem;
 import frc.robot.utils.Container;
 import frc.robot.utils.FuelSim;
 import frc.robot.utils.HopperSim;
-import frc.robot.utils.ShooterCalculator;
 import frc.robot.utils.ShooterSim;
 import frc.robot.utils.SwerveFieldContactSim;
 
 import static edu.wpi.first.units.Units.Meters;
 
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
 public class RobotContainer {
@@ -37,7 +38,6 @@ public class RobotContainer {
   private final CommandXboxController m_driverController;
 
   private final CommandSwerveDrivetrain m_drivetrainSubsystem;
-  private final ShooterCalculator m_shooterCalculator;
   private final ShooterSubsystem m_shooterSubsystem;
   private final FeederSubsystem m_feederSubsystem;
   private final HopperSubsystem m_hopperSubsystem;
@@ -61,8 +61,7 @@ public class RobotContainer {
 
     m_drivetrainSubsystem = TunerConstants.createDrivetrain();
 
-    m_shooterCalculator = new ShooterCalculator(m_drivetrainSubsystem::getPose);
-    m_shooterSubsystem = new ShooterSubsystem(m_shooterCalculator);
+    m_shooterSubsystem = new ShooterSubsystem();
     m_feederSubsystem = new FeederSubsystem();
     m_hopperSubsystem = new HopperSubsystem();
     m_intakeSubsystem = new IntakeSubsystem();
@@ -91,8 +90,8 @@ public class RobotContainer {
     m_driverController.b().onTrue(m_idleRetractedCommand);
     m_driverController.x().onTrue(m_intakeCommand);
 
-    m_driverController.leftBumper().whileTrue(m_aimAndPassCommand).onFalse(m_idleDeployedCommand);
-    m_driverController.rightBumper().whileTrue(m_aimAndShootCommand).onFalse(m_idleDeployedCommand);
+    m_driverController.a().whileTrue(m_aimAndPassCommand).onFalse(m_idleDeployedCommand);
+    m_driverController.y().whileTrue(m_aimAndShootCommand).onFalse(m_idleDeployedCommand);
 
   }
 
@@ -101,7 +100,9 @@ public class RobotContainer {
   }
 
   public void containerPeriodic() {
-    m_theMachine.calculateSubsytemPoses();
+    if(Robot.isSimulation()) m_theMachine.calculateSubsytemPoses();
+    //SmartDashboard.putData(CommandScheduler.getInstance());
+    //m_theMachine.publishTelemetry();
   }
 
   private void configureSims() {

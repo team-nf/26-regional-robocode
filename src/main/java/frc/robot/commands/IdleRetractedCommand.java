@@ -13,6 +13,8 @@ public class IdleRetractedCommand extends Command {
 
   public IdleRetractedCommand(TheMachine theMachine) {
     this.theMachine = theMachine;
+    addRequirements(theMachine.getSubsystems());
+
   }
 
   @Override

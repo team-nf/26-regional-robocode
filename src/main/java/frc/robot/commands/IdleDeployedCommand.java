@@ -15,6 +15,8 @@ public class IdleDeployedCommand extends Command {
   /** Creates a new IdleDeployedCommand. */
   public IdleDeployedCommand(TheMachine theMachine) {
     this.theMachine = theMachine;
+    addRequirements(theMachine.getSubsystems());
+
     // Use addRequirements() here to declare subsystem dependencies.
   }
 

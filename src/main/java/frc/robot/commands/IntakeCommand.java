@@ -13,6 +13,8 @@ public class IntakeCommand extends Command {
 
   public IntakeCommand(TheMachine theMachine) {
     this.theMachine = theMachine;
+    addRequirements(theMachine.getSubsystems());
+
   }
 
   @Override

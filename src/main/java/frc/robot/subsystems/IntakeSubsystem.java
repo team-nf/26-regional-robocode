@@ -26,7 +26,9 @@ import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.Robot;
 import frc.robot.constants.IntakeConstants;
 
 public class IntakeSubsystem extends SubsystemBase {
@@ -66,7 +68,8 @@ public class IntakeSubsystem extends SubsystemBase {
       System.out.println("Could not apply intake arm motor configs, error code: " + status.toString());
     }
 
-    intakeArmMotor.setPosition(
+    
+    if(Robot.isReal()) intakeArmMotor.setPosition(
         IntakeConstants.INTAKE_ARM_START_ANGLE.times(IntakeConstants.INTAKE_ARM_GEAR_REDUCTION));
 
     intakeVelocityControl = IntakeConstants.INTAKE_VELOCITY_CONTROL.clone();
@@ -113,7 +116,12 @@ public class IntakeSubsystem extends SubsystemBase {
   }
 
   public void publishTelemetry() {
-    // Implement telemetry publishing here if needed
+    //SmartDashboard.putNumber("Intake/Intake Arm Error", intakeArmMotor.getClosedLoopError().getValueAsDouble());
+    //SmartDashboard.putNumber("Intake/Intake Arm Position", getIntakeArmPosition());
+    //SmartDashboard.putNumber("Intake/Intake Arm Setpoint", intakeArmMotor.getClosedLoopReference().getValueAsDouble());
+    //SmartDashboard.putNumber("Intake/Intake Arm Voltage", intakeArmMotor.getMotorVoltage().getValueAsDouble());
+    //SmartDashboard.putNumber("Intake/Intake Arm Current", intakeArmMotor.getStatorCurrent().getValueAsDouble());
+    //SmartDashboard.putNumber("Intake/Intake Roller Velocity", intakeMotor.getVelocity().getValueAsDouble());
   }
 
   // --- SIMULATION ---
@@ -150,7 +158,7 @@ public class IntakeSubsystem extends SubsystemBase {
           IntakeConstants.INTAKE_ARM_LENGTH.in(Meters),
           IntakeConstants.INTAKE_ARM_DEPLOYED_ANGLE.in(Radians),
           IntakeConstants.INTAKE_ARM_START_ANGLE.in(Radians),
-          true,
+          false,
           IntakeConstants.INTAKE_ARM_START_ANGLE.in(Radians),
           0.0,
           0.0);
@@ -208,18 +216,15 @@ public class IntakeSubsystem extends SubsystemBase {
     intakeGoalArmAngle = IntakeConstants.INTAKE_ARM_DEPLOYED_ANGLE.in(Rotations);
     intakeGoalVelocity = IntakeConstants.INTAKE_INTAKING_VELOCITY.in(RotationsPerSecond);
     setIntakeArmPosition(intakeGoalArmAngle);
-    if (isIntakeDeployed()) {
-      setIntakeSpeed(intakeGoalVelocity);
-    }
+    setIntakeSpeed(intakeGoalVelocity);
+    
   }
 
   public void intakeWithOffset() {
     intakeGoalVelocity = IntakeConstants.INTAKE_INTAKING_VELOCITY.in(RotationsPerSecond);
     intakeGoalArmAngle = IntakeConstants.INTAKE_ARM_DEPLOYED_WITH_OFFSET_ANGLE.in(Rotations);
     setIntakeArmPosition(intakeGoalArmAngle);
-    if (isIntakeDeployed()) {
-      setIntakeSpeed(intakeGoalVelocity);
-    }
+    setIntakeSpeed(intakeGoalVelocity);
   }
 
   public void feed() {

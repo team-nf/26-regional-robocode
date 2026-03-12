@@ -27,9 +27,9 @@ public class DriveConstants {
     public static final double AIMING_kI = 30.0;
     public static final double AIMING_kD = 0.5;
 
-    public static final double AIMED_DRIVING_kP = 24;
+    public static final double AIMED_DRIVING_kP = 15.0;
     public static final double AIMED_DRIVING_kI = 30.0;
-    public static final double AIMED_DRIVING_KD = 0.5;
+    public static final double AIMED_DRIVING_KD = 0.0;
 
     public static final double AIMING_TOLERANCE_RADIANS = Degrees.of(2).in(Radians);
 }

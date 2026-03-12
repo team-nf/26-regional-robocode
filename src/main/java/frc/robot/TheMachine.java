@@ -8,6 +8,7 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructPublisher;
 import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.constants.TheMachineConstants;
 import frc.robot.constants.States.TheMachineStates.TheMachineState;
@@ -78,32 +79,32 @@ public class TheMachine {
         state = TheMachineState.INTAKE;
     }
 
-    public void getReady() {
-        shooterSubsystem.shootFromPose();
+    public void getReady(double velocityRPS, double hoodAngleRotations) {
+        shooterSubsystem.shoot(velocityRPS, hoodAngleRotations);
         feederSubsystem.reverse();
         hopperSubsystem.reverse();
         intakeSubsystem.deploy();
         state = TheMachineState.GET_READY;
     }
 
-    public void shoot() {
-        shooterSubsystem.shootFromPose();
+    public void shoot(double velocityRPS, double hoodAngleRotations) {
+        shooterSubsystem.shoot(velocityRPS, hoodAngleRotations);
         feederSubsystem.feed();
         hopperSubsystem.feed();
         intakeSubsystem.feed();
         state = TheMachineState.SHOOT;
     }
 
-    public void getReadyPass() {
-        shooterSubsystem.pass();
+    public void getReadyPass(double velocityRPS, double hoodAngleRotations) {
+        shooterSubsystem.pass(velocityRPS, hoodAngleRotations);
         feederSubsystem.reverse();
         hopperSubsystem.reverse();
         intakeSubsystem.deploy();
         state = TheMachineState.GET_READY_PASS;
     }
 
-    public void pass() {
-        shooterSubsystem.pass();
+    public void pass(double velocityRPS, double hoodAngleRotations) {
+        shooterSubsystem.pass(velocityRPS, hoodAngleRotations);
         feederSubsystem.feed();
         hopperSubsystem.feed();
         intakeSubsystem.feed();
@@ -155,20 +156,21 @@ private StructPublisher<Pose3d> hoodPosePublisher = NetworkTableInstance.getDefa
 
   public void calculateSubsytemPoses() {
 
-    double hoodAngle = shooterSubsystem.getHoodPosition();
+    double hoodAngle = shooterSubsystem.getHoodPosition()*360;
 
     Pose3d hoodPose = TheMachineConstants.HOOD_RETRACTED_POSE
-                            .rotateAround(TheMachineConstants.HOOD_RETRACTED_POSE.getTranslation(),new Rotation3d(0, Math.toRadians(hoodAngle*360), 0));
+                            .rotateAround(TheMachineConstants.HOOD_RETRACTED_POSE.getTranslation(),new Rotation3d(0, Math.toRadians(hoodAngle), 0));
 
-    double intakeArmAngle = intakeSubsystem.getIntakeArmPosition();
+    double intakeArmAngle = intakeSubsystem.getIntakeArmPosition()*360;
+    SmartDashboard.putNumber("IntakeArmAngle", intakeArmAngle);
 
     Pose3d intakePose = TheMachineConstants.INTAKE_DEPLOYED_POSE
-                          .rotateAround(TheMachineConstants.INTAKE_DEPLOYED_POSE.getTranslation(), new Rotation3d(0, -Math.toRadians(intakeArmAngle*360 + 60), 0));
+                          .rotateAround(TheMachineConstants.INTAKE_DEPLOYED_POSE.getTranslation(), new Rotation3d(0, -Math.toRadians(intakeArmAngle), 0));
 
     Distance funnelExtension = Meters.of(0.0);
 
-    if(intakeArmAngle*360 < 30) funnelExtension = Meters.of(0.3125);
-    else funnelExtension = Meters.of(0.3125).times(Math.cos(Math.toRadians(intakeArmAngle*360 - 30)));
+    if(intakeArmAngle < 30) funnelExtension = Meters.of(0.3125);
+    else funnelExtension = Meters.of(0.3125).times(Math.cos(Math.toRadians(intakeArmAngle - 30)));
     
     Pose3d funnelPose = TheMachineConstants.FUNNEL_RETRACTED_POSE
                           .plus(new Transform3d(funnelExtension.in(Meters), 0, 0, new Rotation3d(0, 0, 0)));
@@ -176,6 +178,13 @@ private StructPublisher<Pose3d> hoodPosePublisher = NetworkTableInstance.getDefa
     hoodPosePublisher.set(hoodPose);
     intakePosePublisher.set(intakePose);
     funnelPosePublisher.set(funnelPose);
+  }
+
+  public void publishTelemetry() {
+    shooterSubsystem.publishTelemetry();
+    feederSubsystem.publishTelemetry();
+    hopperSubsystem.publishTelemetry();
+    intakeSubsystem.publishTelemetry();
   }
 
   public SubsystemBase[] getSubsystems() {

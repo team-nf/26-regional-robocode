@@ -16,6 +16,7 @@ import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.sim.ChassisReference;
 import com.ctre.phoenix6.sim.TalonFXSimState;
@@ -28,6 +29,7 @@ import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.constants.ShooterConstants;
 import frc.robot.utils.ShooterCalculator;
@@ -49,15 +51,16 @@ public class ShooterSubsystem extends SubsystemBase {
     private final VelocityVoltage flywheelVelocityControlRight;
     private final PositionVoltage hoodPositionControl;
 
-    private final ShooterCalculator calculator;
+    // Pre-cached unit conversions
+    private static final double MIN_HOOD_ROT = ShooterConstants.MIN_HOOD_ANGLE.in(Rotations);
+    private static final double MAX_HOOD_ROT = ShooterConstants.MAX_HOOD_ANGLE.in(Rotations);
 
     private double flywheelGoalVelocity;
     private double hoodGoalPosition;
     private double flywheelTestRPM;
     private double hoodTestAngle;
 
-    public ShooterSubsystem(ShooterCalculator calculator) {
-        this.calculator = calculator;
+    public ShooterSubsystem() {
 
         // Initialize flywheel motors
         flywheelMotor1 = new TalonFX(ShooterConstants.FIRST_SHOOTER_MOTOR_ID);
@@ -76,11 +79,12 @@ public class ShooterSubsystem extends SubsystemBase {
         applyConfig(flywheelMotor2, leftConfig, "Flywheel Motor 2 (Left Follower)");
         flywheelMotor2.setControl(new Follower(flywheelMotor1.getDeviceID(), MotorAlignmentValue.Aligned));
 
+        var rightConfig =  ShooterConstants.SHOOTER_CONFIG.withMotorOutput(ShooterConstants.SHOOTER_MOTOR_OUTPUT_CONFIGS.withInverted(InvertedValue.CounterClockwise_Positive));
         // Configure right flywheel leader (motor3) — default orientation
-        applyConfig(flywheelMotor3, ShooterConstants.SHOOTER_CONFIG, "Flywheel Motor 3 (Right Leader)");
+        applyConfig(flywheelMotor3, rightConfig, "Flywheel Motor 3 (Right Leader)");
 
         // Motor4 follows Motor3 (same direction = aligned)
-        applyConfig(flywheelMotor4, ShooterConstants.SHOOTER_CONFIG, "Flywheel Motor 4 (Right Follower)");
+        applyConfig(flywheelMotor4, rightConfig, "Flywheel Motor 4 (Right Follower)");
         flywheelMotor4.setControl(new Follower(flywheelMotor3.getDeviceID(), MotorAlignmentValue.Aligned));
 
         // Configure hood motor
@@ -113,8 +117,8 @@ public class ShooterSubsystem extends SubsystemBase {
 
     private void setHoodAngle(double positionRotations) {
         double clampedRotations = Math.max(
-            ShooterConstants.MIN_HOOD_ANGLE.in(Rotations),
-            Math.min(positionRotations, ShooterConstants.MAX_HOOD_ANGLE.in(Rotations))
+            MIN_HOOD_ROT,
+            Math.min(positionRotations, MAX_HOOD_ROT)
         );
         double motorPosition = clampedRotations * ShooterConstants.HOOD_GEAR_REDUCTION;
         hoodMotor.setControl(hoodPositionControl.withPosition(motorPosition));
@@ -141,24 +145,24 @@ public class ShooterSubsystem extends SubsystemBase {
 
     /** Hold flywheel at idle speed, park hood at min angle. */
     public void rest() {
-        flywheelGoalVelocity = calculator.calculateRestFlywheelSpeed();
-        hoodGoalPosition = calculator.calculateRestHoodAngle();
+        flywheelGoalVelocity = ShooterCalculator.calculateRestFlywheelSpeed();
+        hoodGoalPosition = ShooterCalculator.calculateRestHoodAngle();
         setFlywheelSpeed(flywheelGoalVelocity);
         setHoodAngle(hoodGoalPosition);
     }
 
-    /** Set flywheel speed and hood angle from current robot pose (auto-aim). */
-    public void shootFromPose() {
-        flywheelGoalVelocity = calculator.calculateFlywheelSpeedFromCurrentPose();
-        hoodGoalPosition = calculator.calculateHoodAngleFromCurrentPose();
+    /** Set flywheel speed and hood angle with given parameters. */
+    public void shoot(double velocityRPS, double hoodAngleRotations) {
+        flywheelGoalVelocity = velocityRPS;
+        hoodGoalPosition = hoodAngleRotations;
         setFlywheelSpeed(flywheelGoalVelocity);
         setHoodAngle(hoodGoalPosition);
     }
 
     /** Set flywheel speed and hood angle for a lob pass. */
-    public void pass() {
-        flywheelGoalVelocity = calculator.calculatePassSpeedFromCurrentPose();
-        hoodGoalPosition = calculator.calculatePassHoodAngle();
+    public void pass(double velocityRPS, double hoodAngleRotations) {
+        flywheelGoalVelocity = velocityRPS;
+        hoodGoalPosition = hoodAngleRotations;
         setFlywheelSpeed(flywheelGoalVelocity);
         setHoodAngle(hoodGoalPosition);
     }
@@ -190,23 +194,24 @@ public class ShooterSubsystem extends SubsystemBase {
         return hoodMotor.getPosition().getValueAsDouble() / ShooterConstants.HOOD_GEAR_REDUCTION;
     }
 
+    // Pre-cached allowable error thresholds
+    private static final double FLYWHEEL_ERROR_RPS = ShooterConstants.FLYWHEEL_ALLOWABLE_ERROR.in(RotationsPerSecond);
+    private static final double HOOD_ERROR_ROT = ShooterConstants.HOOD_ALLOWABLE_ERROR.in(Rotations);
+
     /** Check if the flywheel is at the target speed within allowable error. */
     public boolean isFlywheelAtSpeed() {
-        return Math.abs(getFlywheel1Velocity() - flywheelGoalVelocity)
-            < ShooterConstants.FLYWHEEL_ALLOWABLE_ERROR.in(RotationsPerSecond)
-            && Math.abs(getFlywheel2Velocity() - flywheelGoalVelocity)
-            < ShooterConstants.FLYWHEEL_ALLOWABLE_ERROR.in(RotationsPerSecond);
+        return Math.abs(getFlywheel1Velocity() - flywheelGoalVelocity) < FLYWHEEL_ERROR_RPS
+            && Math.abs(getFlywheel2Velocity() - flywheelGoalVelocity) < FLYWHEEL_ERROR_RPS;
     }
 
     /** Check if the hood is at the target angle within allowable error. */
     public boolean isHoodAtAngle() {
-        return Math.abs(getHoodPosition() - hoodGoalPosition)
-            < ShooterConstants.HOOD_ALLOWABLE_ERROR.in(Rotations);
+        return Math.abs(getHoodPosition() - hoodGoalPosition) < HOOD_ERROR_ROT;
     }
 
     /** Check if the shooter is ready to fire (flywheel at speed AND hood at angle). */
     public boolean isReadyToShoot() {
-        return isFlywheelAtSpeed() && isHoodAtAngle();
+        return isFlywheelAtSpeed() && isHoodAtAngle() && getFlywheel1Velocity() > 15;
     }
 
     public void publishTelemetry() {

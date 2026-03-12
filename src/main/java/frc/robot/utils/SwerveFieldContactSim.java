@@ -13,23 +13,37 @@ import frc.robot.constants.Dimensions;
 import frc.robot.subsystems.CommandSwerveDrivetrain;
 
 public class SwerveFieldContactSim {
-    public double simLoopTimeSec = 0.001; 
-    private int pointNumberForEdge = 8;
+    public final double simLoopTimeSec = 0.001;
 
-    private CommandSwerveDrivetrain m_swerveDrivetrain = null;
-    private Supplier<Boolean> isIntakeDeployed = null;
+    private static final int EDGE_POINTS_PER_SIDE = 8;
+    private static final int CORNER_COUNT = 4;
+    private static final int TOTAL_EDGE_POINTS = EDGE_POINTS_PER_SIDE * CORNER_COUNT;
+    private static final double INTAKE_DEPLOYED_OFFSET = 0.2;
+
+    private static final double HALF_COLLISION_DIST = Dimensions.BUMPER_COLLISION_DISTANCE.in(Meters) / 2.0;
+    private static final double COS_45 = Math.cos(Math.PI / 4);
+    private static final double SIN_45 = Math.sin(Math.PI / 4);
+    private static final double DIAGONAL_OFFSET = HALF_COLLISION_DIST * COS_45;
+    private static final double DIAGONAL_LATERAL = HALF_COLLISION_DIST * SIN_45;
 
     private static SwerveFieldContactSim instance;
 
-    public void setSwerveDrivetrain(CommandSwerveDrivetrain swerveDrivetrain) {
-        this.m_swerveDrivetrain = swerveDrivetrain;
-        currentSimPose = m_swerveDrivetrain.getInitialStartPose();
-        prevSimPose = m_swerveDrivetrain.getInitialStartPose();
-    }
+    private CommandSwerveDrivetrain m_swerveDrivetrain;
+    private Supplier<Boolean> isIntakeDeployed;
 
-    public void setIntakeDeployedSupplier(Supplier<Boolean> isIntakeDeployed) {
-        this.isIntakeDeployed = isIntakeDeployed;
-    }
+    private Pose2d currentSimPose;
+    private Pose2d prevSimPose;
+
+    private final Pose2d[] cornerBuffer = new Pose2d[CORNER_COUNT];
+    private final Pose2d[] edgeBuffer = new Pose2d[TOTAL_EDGE_POINTS];
+    private final boolean[] cornerCollisionFlags = new boolean[CORNER_COUNT];
+
+    private final StructArrayPublisher<Pose2d> cornerPosePublisher =
+            NetworkTableInstance.getDefault().getStructArrayTopic("Sim/Swerve/CornerPoses", Pose2d.struct).publish();
+    private final StructArrayPublisher<Pose2d> edgePosePublisher =
+            NetworkTableInstance.getDefault().getStructArrayTopic("Sim/Swerve/EdgePoses", Pose2d.struct).publish();
+
+    private SwerveFieldContactSim() {}
 
     public static SwerveFieldContactSim getInstance() {
         if (instance == null) {
@@ -38,242 +52,154 @@ public class SwerveFieldContactSim {
         return instance;
     }
 
-    private Pose2d currentSimPose;
-    private Pose2d prevSimPose;
+    public void setSwerveDrivetrain(CommandSwerveDrivetrain swerveDrivetrain) {
+        m_swerveDrivetrain = swerveDrivetrain;
+        Pose2d startPose = swerveDrivetrain.getInitialStartPose();
+        currentSimPose = startPose;
+        prevSimPose = startPose;
+    }
 
-
-    private SwerveFieldContactSim() {
-    } 
+    public void setIntakeDeployedSupplier(Supplier<Boolean> isIntakeDeployed) {
+        this.isIntakeDeployed = isIntakeDeployed;
+    }
 
     public CommandSwerveDrivetrain getSwerveDrivetrain() {
         return m_swerveDrivetrain;
     }
 
-    public void handleSwerveSimFieldCollisions() {
-            currentSimPose = m_swerveDrivetrain.getState().Pose;
-
-            // Handle collisions with field boundaries
-            double fieldXMin = 0.1;
-            double fieldXMax = 16.33;
-            double fieldYMin = 0.1;
-            double fieldYMax = 8.15;
-
-            double frontCollisionDistance = Dimensions.BUMPER_COLLISION_DISTANCE.in(Meters) / 2.0;
-            double backCollisionDistance = Dimensions.BUMPER_COLLISION_DISTANCE.in(Meters) / 2.0;
-
-            double frontOffset = 0.0;
-
-            if(isIntakeDeployed != null && isIntakeDeployed.get()) {
-                frontOffset = 0.2; // add hopper extension length
-            }
-            
-            Pose2d frontLeftCorner = currentSimPose.transformBy(
-                new Transform2d(
-                    frontCollisionDistance * Math.cos(Math.PI/4) + frontOffset,
-                    frontCollisionDistance * Math.sin(Math.PI/4),
-                    Rotation2d.kZero
-                )
-            );
-
-            Pose2d frontRightCorner = currentSimPose.transformBy(
-                new Transform2d(
-                    frontCollisionDistance * Math.cos(- Math.PI/4) + frontOffset,
-                    frontCollisionDistance * Math.sin(- Math.PI/4),
-                    Rotation2d.kZero
-                )
-            );
-
-            Pose2d backLeftCorner = currentSimPose.transformBy(
-                new Transform2d(
-                    backCollisionDistance * Math.cos(3*Math.PI/4),
-                    backCollisionDistance * Math.sin(3*Math.PI/4),
-                    Rotation2d.kZero
-                )
-            );
-
-            Pose2d backRightCorner = currentSimPose.transformBy(
-                new Transform2d(
-                    backCollisionDistance * Math.cos(- 3*Math.PI/4),
-                    backCollisionDistance * Math.sin(- 3*Math.PI/4),
-                    Rotation2d.kZero
-                )
-            );
-
-            boolean[] collisionResults = checkFieldCollisionWithDirections(new Pose2d[] {
-                frontLeftCorner,
-                frontRightCorner,
-                backLeftCorner,
-                backRightCorner
-            });
-
-            double correctedX = currentSimPose.getX();
-            double correctedY = currentSimPose.getY();
-            Rotation2d correctedRotation2d = currentSimPose.getRotation();
-
-            if (collisionResults[0] && correctedX < prevSimPose.getX()) correctedX = prevSimPose.getX();
-
-            if (collisionResults[1] && correctedX > prevSimPose.getX()) correctedX = prevSimPose.getX();
-
-            if (collisionResults[2] && correctedY < prevSimPose.getY()) correctedY = prevSimPose.getY();
-
-            if (collisionResults[3] && correctedY > prevSimPose.getY()) correctedY = prevSimPose.getY();
-
-            if (collisionResults[4] && correctedRotation2d.getDegrees() > prevSimPose.getRotation().getDegrees()) 
-                correctedRotation2d = prevSimPose.getRotation();
-
-            if (collisionResults[5] && correctedRotation2d.getDegrees() < prevSimPose.getRotation().getDegrees()) 
-                correctedRotation2d = prevSimPose.getRotation();
-
-            boolean collisionDetected = false;
-
-            for (boolean b : collisionResults) {
-                if (b) {
-                    collisionDetected = true;
-                    break;
-                }
-            }
-            
-            if (collisionDetected) {
-                m_swerveDrivetrain.resetPose(new Pose2d(correctedX, correctedY, prevSimPose.getRotation()));
-            }
-            else prevSimPose = currentSimPose;
-            
+    public Pose2d getPose() {
+        return currentSimPose;
     }
 
-    private StructArrayPublisher<Pose2d> cornerPosePublisher 
-                = NetworkTableInstance.getDefault().getStructArrayTopic("Sim/Swerve/CornerPoses", Pose2d.struct).publish();
-    
-    private StructArrayPublisher<Pose2d> edgePosePublisher 
-                = NetworkTableInstance.getDefault().getStructArrayTopic("Sim/Swerve/EdgePoses", Pose2d.struct).publish();
+    public void handleSwerveSimFieldCollisions() {
+        if (m_swerveDrivetrain == null) return;
 
-    public boolean[] checkFieldCollisionWithDirections(Pose2d[] robotCorners)
-    {
-        boolean x_plus_collided = false;
-        boolean x_minus_collided = false;
-        boolean y_plus_collided = false;
-        boolean y_minus_collided = false;
+        currentSimPose = m_swerveDrivetrain.getState().Pose;
 
-        boolean ccw_rotation_collided = false;
-        boolean cw_rotation_collided = false;
+        double frontOffset = (isIntakeDeployed != null && isIntakeDeployed.get()) ? INTAKE_DEPLOYED_OFFSET : 0.0;
 
-        boolean[] cornerCollisionCheck = {false, false, false, false};
+        cornerBuffer[0] = currentSimPose.transformBy(new Transform2d( DIAGONAL_OFFSET + frontOffset,  DIAGONAL_LATERAL, Rotation2d.kZero));
+        cornerBuffer[1] = currentSimPose.transformBy(new Transform2d( DIAGONAL_OFFSET + frontOffset, -DIAGONAL_LATERAL, Rotation2d.kZero));
+        cornerBuffer[2] = currentSimPose.transformBy(new Transform2d(-DIAGONAL_OFFSET,                DIAGONAL_LATERAL, Rotation2d.kZero));
+        cornerBuffer[3] = currentSimPose.transformBy(new Transform2d(-DIAGONAL_OFFSET,               -DIAGONAL_LATERAL, Rotation2d.kZero));
 
-        for (int i = 0; i < robotCorners.length; i++) {
+        boolean[] results = checkFieldCollisionWithDirections();
 
-            Pose2d point = robotCorners[i];
+        double correctedX = currentSimPose.getX();
+        double correctedY = currentSimPose.getY();
 
-            double x = point.getX();
-            double y = point.getY();
+        if (results[0] && correctedX < prevSimPose.getX()) correctedX = prevSimPose.getX();
+        if (results[1] && correctedX > prevSimPose.getX()) correctedX = prevSimPose.getX();
+        if (results[2] && correctedY < prevSimPose.getY()) correctedY = prevSimPose.getY();
+        if (results[3] && correctedY > prevSimPose.getY()) correctedY = prevSimPose.getY();
 
-            for (double[] collisionYRange : Dimensions.getCollisionValuesForY(x)) {
-                    if (collisionYRange[0] == -1.0 && collisionYRange[1] == -1.0) {
-                        continue;
-                    }
-                    if (y > collisionYRange[0] && y < collisionYRange[1]) {
-                        if ((y - collisionYRange[0]) < (collisionYRange[1] - y)) {
-                            y_plus_collided = true;
-                        } else {
-                            y_minus_collided = true;
-                        }
-                    }
+        boolean collisionDetected = false;
+        for (boolean b : results) {
+            if (b) { collisionDetected = true; break; }
+        }
+
+        if (collisionDetected) {
+            m_swerveDrivetrain.resetPose(new Pose2d(correctedX, correctedY, prevSimPose.getRotation()));
+        } else {
+            prevSimPose = currentSimPose;
+        }
+    }
+
+    private boolean[] checkFieldCollisionWithDirections() {
+        boolean xPlusCollided = false;
+        boolean xMinusCollided = false;
+        boolean yPlusCollided = false;
+        boolean yMinusCollided = false;
+        boolean ccwCollided = false;
+        boolean cwCollided = false;
+
+        for (int i = 0; i < CORNER_COUNT; i++) {
+            double x = cornerBuffer[i].getX();
+            double y = cornerBuffer[i].getY();
+
+            boolean hitY = checkCollision(y, Dimensions.getCollisionValuesForY(x));
+            boolean hitX = checkCollision(x, Dimensions.getCollisionValuesForX(y));
+
+            if (hitY) {
+                if (isCloserToLow(y, Dimensions.getCollisionValuesForY(x))) yPlusCollided = true;
+                else yMinusCollided = true;
+            }
+            if (hitX) {
+                if (isCloserToLow(x, Dimensions.getCollisionValuesForX(y))) xPlusCollided = true;
+                else xMinusCollided = true;
             }
 
-            for (double[] collisionXRange : Dimensions.getCollisionValuesForX(y)) {
-                    if (collisionXRange[0] == -1.0 && collisionXRange[1] == -1.0) {
-                        continue;
-                    }
-                    if (x > collisionXRange[0] && x < collisionXRange[1]) {
-                        if ((x - collisionXRange[0]) < (collisionXRange[1] - x)) {
-                            x_plus_collided = true;
-                        } else {
-                            x_minus_collided = true;
-                        }
-                    }
+            cornerCollisionFlags[i] = hitX || hitY;
+        }
+
+        if (cornerCollisionFlags[0] && !cornerCollisionFlags[1] && !cornerCollisionFlags[2]) ccwCollided = true;
+        if (cornerCollisionFlags[1] && !cornerCollisionFlags[0] && !cornerCollisionFlags[3]) cwCollided = true;
+        if (cornerCollisionFlags[2] && !cornerCollisionFlags[3] && !cornerCollisionFlags[0]) cwCollided = true;
+        if (cornerCollisionFlags[3] && !cornerCollisionFlags[2] && !cornerCollisionFlags[1]) ccwCollided = true;
+
+        buildEdgePoints();
+
+        for (int i = 0; i < TOTAL_EDGE_POINTS; i++) {
+            double x = edgeBuffer[i].getX();
+            double y = edgeBuffer[i].getY();
+
+            if (checkCollision(y, Dimensions.getCollisionValuesForY(x))) {
+                if (isCloserToLow(y, Dimensions.getCollisionValuesForY(x))) yPlusCollided = true;
+                else yMinusCollided = true;
             }
-            cornerCollisionCheck[i] = x_minus_collided || x_plus_collided || y_minus_collided || y_plus_collided;
-        }
-
-        if(cornerCollisionCheck[0] && !cornerCollisionCheck[1] && !cornerCollisionCheck[2]) {
-            ccw_rotation_collided = true;
-        }
-
-        if(cornerCollisionCheck[1] && !cornerCollisionCheck[0] && !cornerCollisionCheck[3]) {
-            cw_rotation_collided = true;
-        }
-
-        if(cornerCollisionCheck[2] && !cornerCollisionCheck[3] && !cornerCollisionCheck[0]) {
-            cw_rotation_collided = true;
-        }
-
-        if(cornerCollisionCheck[3] && !cornerCollisionCheck[2] && !cornerCollisionCheck[1]) {
-            ccw_rotation_collided = true;
-        }
-
-        Pose2d[] robotCornersOrdered = new Pose2d[] {
-            robotCorners[0],
-            robotCorners[1],
-            robotCorners[3],
-            robotCorners[2]
-        };
-
-        Pose2d[] edgePoints = new Pose2d[pointNumberForEdge * robotCornersOrdered.length];
-
-        for (int i = 0; i < robotCornersOrdered.length; i++) {
-            Pose2d cornerA = robotCornersOrdered[i];
-            Pose2d cornerB = robotCornersOrdered[(i + 1) % robotCornersOrdered.length];
-
-            for (int j = 1; j <= pointNumberForEdge; j++) {
-                double t = j / (pointNumberForEdge + 1.0);
-                double x = cornerA.getX() + t * (cornerB.getX() - cornerA.getX());
-                double y = cornerA.getY() + t * (cornerB.getY() - cornerA.getY());
-                edgePoints[i * pointNumberForEdge + (j - 1)] = new Pose2d(x, y, cornerA.getRotation());
+            if (checkCollision(x, Dimensions.getCollisionValuesForX(y))) {
+                if (isCloserToLow(x, Dimensions.getCollisionValuesForX(y))) xPlusCollided = true;
+                else xMinusCollided = true;
             }
         }
 
-        for (Pose2d point : edgePoints) {
-            double x = point.getX();
-            double y = point.getY();
+        cornerPosePublisher.set(cornerBuffer);
+        edgePosePublisher.set(edgeBuffer);
 
-            for (double[] collisionYRange : Dimensions.getCollisionValuesForY(x)) {
-                    if (collisionYRange[0] == -1.0 && collisionYRange[1] == -1.0) {
-                        continue;
-                    }
-                    if (y > collisionYRange[0] && y < collisionYRange[1]) {
-                        if ((y - collisionYRange[0]) < (collisionYRange[1] - y)) {
-                            y_plus_collided = true;
-                        } else {
-                            y_minus_collided = true;
-                        }
-                    }
-            }
+        return new boolean[] { xMinusCollided, xPlusCollided, yMinusCollided, yPlusCollided, ccwCollided, cwCollided };
+    }
 
-            for (double[] collisionXRange : Dimensions.getCollisionValuesForX(y)) {
-                    if (collisionXRange[0] == -1.0 && collisionXRange[1] == -1.0) {
-                        continue;
-                    }
-                    if (x > collisionXRange[0] && x < collisionXRange[1]) {
-                        if ((x - collisionXRange[0]) < (collisionXRange[1] - x)) {
-                            x_plus_collided = true;
-                        } else {
-                            x_minus_collided = true;
-                        }
-                    }
+    private void buildEdgePoints() {
+        final Pose2d[] ordered = { cornerBuffer[0], cornerBuffer[1], cornerBuffer[3], cornerBuffer[2] };
+
+        for (int i = 0; i < CORNER_COUNT; i++) {
+            Pose2d a = ordered[i];
+            Pose2d b = ordered[(i + 1) % CORNER_COUNT];
+            double ax = a.getX(), ay = a.getY();
+            double dx = b.getX() - ax, dy = b.getY() - ay;
+            Rotation2d rot = a.getRotation();
+            int base = i * EDGE_POINTS_PER_SIDE;
+
+            for (int j = 0; j < EDGE_POINTS_PER_SIDE; j++) {
+                double t = (j + 1) / (EDGE_POINTS_PER_SIDE + 1.0);
+                edgeBuffer[base + j] = new Pose2d(ax + t * dx, ay + t * dy, rot);
             }
         }
+    }
 
-        cornerPosePublisher.set(robotCorners);
-        edgePosePublisher.set(edgePoints);
+    private static boolean checkCollision(double val, double[][] ranges) {
+        for (double[] range : ranges) {
+            if (range[0] == -1.0 && range[1] == -1.0) continue;
+            if (val > range[0] && val < range[1]) return true;
+        }
+        return false;
+    }
 
-        return new boolean[] {x_minus_collided, x_plus_collided, y_minus_collided, y_plus_collided, ccw_rotation_collided, cw_rotation_collided};
+    private static boolean isCloserToLow(double val, double[][] ranges) {
+        for (double[] range : ranges) {
+            if (range[0] == -1.0 && range[1] == -1.0) continue;
+            if (val > range[0] && val < range[1]) {
+                return (val - range[0]) < (range[1] - val);
+            }
+        }
+        return false;
     }
 
     public void reset() {
-        currentSimPose = m_swerveDrivetrain.getInitialStartPose();
-        prevSimPose = m_swerveDrivetrain.getInitialStartPose();
+        if (m_swerveDrivetrain == null) return;
+        Pose2d startPose = m_swerveDrivetrain.getInitialStartPose();
+        currentSimPose = startPose;
+        prevSimPose = startPose;
         m_swerveDrivetrain.resetPose(currentSimPose);
-    }
-
-    public Pose2d getPose() {
-        return currentSimPose;
     }
 }

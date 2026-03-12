@@ -52,7 +52,7 @@ public class IntakeConstants {
 
     public static final AngularVelocity INTAKE_ALLOWABLE_ERROR = RotationsPerSecond.of(1.0); // in RPS
 
-    public static final AngularVelocity INTAKE_INTAKING_VELOCITY = RotationsPerSecond.of(5); // in RPS
+    public static final AngularVelocity INTAKE_INTAKING_VELOCITY = RotationsPerSecond.of(10); // in RPS
     public static final AngularVelocity INTAKE_FEEDING_VELOCITY = RotationsPerSecond.of(5); // in RPS
     public static final AngularVelocity INTAKE_REVERSE_VELOCITY = RotationsPerSecond.of(-15.0); // in RPS
     public static final AngularVelocity INTAKE_REVERSE_FAILSAFE_VELOCITY = RotationsPerSecond.of(-5.0); // in RPS
@@ -63,11 +63,21 @@ public class IntakeConstants {
     // Default ID of -1 indicates "no dedicated arm motor configured"; callers may
     // choose to fallback to using the intake motor instead.
 
-    public static final Angle INTAKE_ARM_DEPLOYED_ANGLE = Degrees.of(0);
+    
+    public static final Angle INTAKE_ARM_DEPLOYED_ANGLE = Degrees.of(1);
     public static final Angle INTAKE_ARM_RETRACTED_ANGLE = Degrees.of(110);
     public static final Angle INTAKE_ARM_START_ANGLE = Degrees.of(120);
+    
     public static final Angle INTAKE_FEED_ANGLE = Degrees.of(60);
     public static final Angle INTAKE_ARM_BETWEEN_ANGLE = Degrees.of(17.5);
+
+    /* 
+    public static final Angle INTAKE_ARM_DEPLOYED_ANGLE = Degrees.of(0);
+    public static final Angle INTAKE_ARM_RETRACTED_ANGLE = Degrees.of(0);
+    public static final Angle INTAKE_ARM_START_ANGLE = Degrees.of(0);
+    
+    public static final Angle INTAKE_FEED_ANGLE = Degrees.of(0);
+    public static final Angle INTAKE_ARM_BETWEEN_ANGLE = Degrees.of(0);*/
     
     public static final Angle INTAKE_ARM_ALLOWABLE_ERROR = Degrees.of(10);
 
@@ -105,7 +115,7 @@ public class IntakeConstants {
                         .withEnableFOC(false);
 
     // Arm physical defaults for simulation
-    public static final Mass INTAKE_ARM_MASS = Kilograms.of(0.1);
+    public static final Mass INTAKE_ARM_MASS = Kilograms.of(0.01);
     public static final Distance INTAKE_ARM_LENGTH = Meters.of(0.1);
     public static final double INTAKE_ARM_GEAR_REDUCTION = 60.0/18.0*36/14*5;
     public static final double INTAKE_ARM_INERTIA = 1.0/3.0 * INTAKE_ARM_MASS.in(Kilogram) * Math.pow(INTAKE_ARM_LENGTH.in(Meters)/2, 2);

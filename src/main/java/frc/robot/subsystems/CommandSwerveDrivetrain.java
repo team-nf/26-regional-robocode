@@ -28,6 +28,7 @@ import com.pathplanner.lib.pathfinding.Pathfinder;
 import com.pathplanner.lib.util.FileVersionException;
 
 import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -63,6 +64,7 @@ import frc.robot.constants.PoseConstants;
 import frc.robot.constants.States.SwerveStates.SwerveState;
 import frc.robot.constants.TunerConstants.TunerSwerveDrivetrain;
 import frc.robot.utils.Container;
+import frc.robot.utils.LimelightHelpers;
 import frc.robot.utils.SwerveFieldContactSim;
 
 /**
@@ -94,6 +96,9 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     private NetworkTable confTable = NetworkTableInstance.getDefault().getTable("Smartdashboard/Conf");
     private BooleanEntry autoAimEnabledEntry = confTable.getBooleanTopic("AutoAimEnabled").getEntry(true);
+    private BooleanEntry llLeftEnabledEntry = confTable.getBooleanTopic("LL-Left_Enabled").getEntry(true);
+    private BooleanEntry llRightEnabledEntry = confTable.getBooleanTopic("LL-Right_Enabled").getEntry(true);
+    private BooleanEntry disabledLocoEnabledEntry = confTable.getBooleanTopic("DisabledLocoEnabled").getEntry(true);
 
     private Field2d confField2d = new Field2d();
 
@@ -185,6 +190,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         }
         configureAutoBuilder();
         setStartPoseInitial();
+        SmartDashboard.putData("Conf/Field", field);
     }
 
 
@@ -263,6 +269,10 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         return getState().Pose;
     }
 
+
+
+    private Field2d field = new Field2d();
+
     @Override
     public void periodic() {
         /*
@@ -287,6 +297,12 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         autoAimEnabled = autoAimEnabledEntry.get(autoAimEnabled);
 
         updateStartConditions();
+
+        if(Robot.isReal()) visionPeriodic();
+
+        field.setRobotPose(getPose());
+
+        
     }
 
     public StructPublisher<Pose2d> posePublisher = NetworkTableInstance.getDefault()
@@ -440,10 +456,10 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     public void updateStartConditions()
      {
-        if(DriverStation.isDisabled())
-        {
-            String selectedStartPose = startPoseChooser.getSelected();
-            Pose2d selectedPose = new Pose2d();
+        if(!DriverStation.isDisabled()) return;
+
+        String selectedStartPose = startPoseChooser.getSelected();
+        Pose2d selectedPose;
             if (!Container.isBlue) {
                 switch (selectedStartPose) {
                     case "LEFT":
@@ -454,6 +470,9 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                         break;
                     case "RIGHT":
                         selectedPose = PoseConstants.START_POSE_RED_RIGHT;
+                        break;
+                    default:
+                        selectedPose = initialStartPose2d;
                         break;
                 }
             } else {
@@ -467,6 +486,9 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                     case "RIGHT":
                         selectedPose = PoseConstants.START_POSE_BLUE_RIGHT;
                         break;
+                    default:
+                        selectedPose = initialStartPose2d;
+                        break;
                 }
                 
             }
@@ -476,6 +498,259 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                 initialStartPose2d = selectedPose;
                 resetPose(initialStartPose2d);
             }
+     }
+
+    public double getHeading() {
+        double yawDeg = getPose().getRotation().getDegrees() % 360;
+        if (yawDeg < 0) {
+            yawDeg += 360;
         }
+        return yawDeg;
+    }
+
+    public double getGyroRate() {
+        return getState().Speeds.omegaRadiansPerSecond * (180.0 / Math.PI);
+    }
+
+    public void addVisionMeasurementMT2() {
+        // First, tell Limelight your robot's current orientation
+    double robotYaw = getHeading();
+    LimelightHelpers.SetRobotOrientation_NoFlush("limelight-left", robotYaw, 0.0, 0.0, 0.0, 0.0, 0.0);
+    LimelightHelpers.SetRobotOrientation("limelight-right", robotYaw, 0.0, 0.0, 0.0, 0.0, 0.0);
+
+    // Get the pose estimate
+    LimelightHelpers.PoseEstimate limelightMeasurementLeft = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("limelight-left");
+    LimelightHelpers.PoseEstimate limelightMeasurementRight = LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2("limelight-right");
+    
+    boolean doRejectUpdate = false;
+    boolean doRejectLeft = false;
+    boolean doRejectRight = false;
+    
+    if(Math.abs(getGyroRate()) > 360)
+    {
+        doRejectUpdate = true;
+    }
+
+
+    //if(drivetrain.swerveDataSupplier().get().swerveControlState == SwerveState.AIMING) doRejectUpdate = true;
+
+    if(limelightMeasurementLeft != null)
+    {
+    if(limelightMeasurementLeft.tagCount == 0)
+        {
+            doRejectLeft = true;
+        }
+    }
+    else doRejectLeft = true;
+
+    if(limelightMeasurementRight != null)
+    {
+    if(limelightMeasurementRight.tagCount == 0)
+        {
+            doRejectRight = true;
+        }
+    }
+    else doRejectRight = true;
+
+
+    if(!doRejectUpdate)
+    {
+        if(!doRejectLeft && llLeftEnabledEntry.get(false))
+        {
+            setVisionMeasurementStdDevs(VecBuilder.fill(.6,.6,9999999));
+            addVisionMeasurement(
+            limelightMeasurementLeft.pose,
+            limelightMeasurementLeft.timestampSeconds
+            );
+        }
+
+        if(!doRejectRight && llRightEnabledEntry.get(false))
+        {
+            setVisionMeasurementStdDevs(VecBuilder.fill(.6,.6,9999999));
+            addVisionMeasurement(
+            limelightMeasurementRight.pose,
+            limelightMeasurementRight.timestampSeconds
+            );
+        }
+    }
+    }
+
+    public void addVisionMeasurementMT1() {
+        // First, tell Limelight your robot's current orientation
+    double robotYaw = getHeading();
+    LimelightHelpers.SetRobotOrientation_NoFlush("limelight-left", robotYaw, 0.0, 0.0, 0.0, 0.0, 0.0);
+    LimelightHelpers.SetRobotOrientation("limelight-right", robotYaw, 0.0, 0.0, 0.0, 0.0, 0.0);
+
+    // Get the pose estimate
+    LimelightHelpers.PoseEstimate limelightMeasurementLeft = LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight-left");
+    LimelightHelpers.PoseEstimate limelightMeasurementRight = LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight-right");
+    
+    boolean doRejectUpdate = false;
+    boolean doRejectLeft = false;
+    boolean doRejectRight = false;
+    
+    if(Math.abs(getGyroRate()) > 360)
+    {
+        doRejectUpdate = true;
+    }
+
+    if(limelightMeasurementLeft != null)
+    {
+        if(limelightMeasurementLeft.tagCount < 1)
+            {
+                doRejectLeft = true;
+            }
+
+        if(limelightMeasurementLeft.avgTagDist > 3.5)
+            {
+                doRejectLeft = true;
+            }
+    }
+    else doRejectLeft = true;
+
+    if(limelightMeasurementRight != null)
+    {
+    if(limelightMeasurementRight.tagCount < 1)
+        {
+            doRejectRight = true;
+        }
+        if(limelightMeasurementLeft.avgTagDist > 3.5)
+            {
+                doRejectLeft = true;
+            }
+    }
+    else doRejectRight = true;
+
+
+    if(!doRejectUpdate)
+    {
+        if(!doRejectLeft && llLeftEnabledEntry.get(true))
+        {
+            setVisionMeasurementStdDevs(VecBuilder.fill(.5,.5,9999999));
+
+            addVisionMeasurement(
+            limelightMeasurementLeft.pose,
+            limelightMeasurementLeft.timestampSeconds
+            );
+        }
+
+        if(!doRejectRight && llRightEnabledEntry.get(true))
+        {
+            setVisionMeasurementStdDevs(VecBuilder.fill(.5,.5,9999999));
+            addVisionMeasurement(
+            limelightMeasurementRight.pose,
+            limelightMeasurementRight.timestampSeconds
+            );
+        }
+    }
+    }
+
+    public void resetWithMT1()
+    {
+        double robotYaw = 0;
+
+        LimelightHelpers.PoseEstimate limelightMeasurementRight = LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight-right");
+
+        if(limelightMeasurementRight != null && limelightMeasurementRight.tagCount > 0)
+        {
+            if (limelightMeasurementRight.avgTagDist < 3.0) {
+                resetPose(limelightMeasurementRight.pose);
+                robotYaw = limelightMeasurementRight.pose.getRotation().getDegrees();
+            }
+        }
+        else
+        {
+            LimelightHelpers.PoseEstimate limelightMeasurementLeft = LimelightHelpers.getBotPoseEstimate_wpiBlue("limelight-left");
+            if(limelightMeasurementLeft != null && limelightMeasurementLeft.tagCount > 0)
+                {
+                    if (limelightMeasurementLeft.avgTagDist < 3.0) {
+                        resetPose(limelightMeasurementLeft.pose);
+                        robotYaw = limelightMeasurementLeft.pose.getRotation().getDegrees();
+
+                    }
+                }
+        }
+        
+        LimelightHelpers.SetRobotOrientation_NoFlush("limelight-left", robotYaw, 0.0, 0.0, 0.0, 0.0, 0.0);
+        LimelightHelpers.SetIMUMode("limelight-left", 1);
+  
+        
+        LimelightHelpers.SetRobotOrientation("limelight-right", robotYaw, 0.0, 0.0, 0.0, 0.0, 0.0);
+        LimelightHelpers.SetIMUMode("limelight-right", 1);
+    }
+
+    private boolean isMode1Set = false;
+    private boolean isLLReady = false;
+
+    public void disabledPeriodic()
+    {
+        isMode1Set = true;
+
+        if (disabledLocoEnabledEntry.get(true)) {
+            resetWithMT1();
+        }
+    }
+
+    public void enabledPeriodic()
+    {   
+        if(!isLLReady && isMode1Set)
+        {
+            double robotYaw = getPose().getRotation().getDegrees();
+
+
+            LimelightHelpers.SetRobotOrientation_NoFlush("limelight-left", robotYaw, 0.0, 0.0, 0.0, 0.0, 0.0);
+            LimelightHelpers.SetIMUMode("limelight-left", 0);
+    
+            
+            LimelightHelpers.SetRobotOrientation("limelight-right", robotYaw, 0.0, 0.0, 0.0, 0.0, 0.0);
+            LimelightHelpers.SetIMUMode("limelight-right", 0);
+            isLLReady = true;
+        }
+
+        if(isLLReady) addVisionMeasurementMT2();
+    }
+
+    private boolean isEnabled = false;
+    // Vision sampling: run vision-heavy work once every VISION_LOOPS scheduler loops
+    private int visionLoopCounter = 0;
+    private static final int VISION_LOOPS = 4; // ~10Hz at 20ms loop; tune as needed
+
+    public void visionPeriodic()
+    {
+        boolean wasEnabled = isEnabled;
+        if (DriverStation.isEnabled() && !isEnabled) {
+            // rising edge: mark enabled
+            isEnabled = true;
+        }
+        if (DriverStation.isDisabled() && isEnabled) {
+            // falling edge: clear flags
+            isEnabled = false;
+            isLLReady = false;
+        }
+
+        if (isEnabled) {
+            if (!wasEnabled) {
+                // Just became enabled — run the enabledPeriodic once immediately to initialize Limelight state
+                enabledPeriodic();
+                visionLoopCounter = 0;
+            } else {
+                // Rate-limit vision-heavy work to once every VISION_LOOPS loops
+                visionLoopCounter++;
+                if (visionLoopCounter >= VISION_LOOPS) {
+                    visionLoopCounter = 0;
+                    enabledPeriodic();
+                }
+            }
+        } else {
+            disabledPeriodic();
+        }
+    }
+
+    public InstantCommand resetPoseWithMT1Command()
+     {
+         return new InstantCommand(() -> 
+        {
+            resetWithMT1();
+        });
      }
 }

@@ -2,10 +2,12 @@ package frc.robot;
 
 import com.pathplanner.lib.commands.PathfindingCommand;
 
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.utils.Container;
 import frc.robot.utils.FuelSim;
 import frc.robot.utils.HopperSim;
 import frc.robot.utils.ShooterSim;
@@ -31,7 +33,9 @@ public class Robot extends TimedRobot {
   }
 
   @Override
-  public void disabledInit() {}
+  public void disabledInit() {
+    Container.isBlue = DriverStation.getAlliance().map(a -> a == DriverStation.Alliance.Blue).orElse(true);
+  }
 
   @Override
   public void disabledPeriodic() {}
