@@ -146,6 +146,10 @@ public class AimAndShootCommand extends Command {
     distance = hubAimPose.getTranslation().getDistance(robotPose.getTranslation());
     time = ShooterCalculator.flightTimeOfFuelFormula(distance);
 
+    filteredSpeedX = 0.0;
+    filteredSpeedY = 0.0;
+    filteredAngleError = 0.0;
+
     // Calculate filtered (smoothed) values
     for (int i = 0; i < FILTER_SIZE; i++) {
       filteredSpeedX += speedXBuffer[i];
