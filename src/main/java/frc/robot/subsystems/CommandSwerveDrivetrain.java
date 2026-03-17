@@ -94,11 +94,11 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     private boolean autoAimEnabled = true;
 
-    private NetworkTable confTable = NetworkTableInstance.getDefault().getTable("Smartdashboard/Conf");
-    private BooleanEntry autoAimEnabledEntry = confTable.getBooleanTopic("AutoAimEnabled").getEntry(true);
-    private BooleanEntry llLeftEnabledEntry = confTable.getBooleanTopic("LL-Left_Enabled").getEntry(true);
-    private BooleanEntry llRightEnabledEntry = confTable.getBooleanTopic("LL-Right_Enabled").getEntry(true);
-    private BooleanEntry disabledLocoEnabledEntry = confTable.getBooleanTopic("DisabledLocoEnabled").getEntry(true);
+    private NetworkTable llTable = NetworkTableInstance.getDefault().getTable("LL");
+    private BooleanEntry autoAimEnabledEntry = llTable.getBooleanTopic("AutoAimEnabled").getEntry(true);
+    private BooleanEntry llLeftEnabledEntry = llTable.getBooleanTopic("LL-Left_Enabled").getEntry(true);
+    private BooleanEntry llRightEnabledEntry = llTable.getBooleanTopic("LL-Right_Enabled").getEntry(true);
+    private BooleanEntry disabledLocoEnabledEntry = llTable.getBooleanTopic("DisabledLocoEnabled").getEntry(true);
 
     private Field2d confField2d = new Field2d();
 
@@ -296,6 +296,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         autoAimEnabledEntry.set(autoAimEnabled);
         autoAimEnabled = autoAimEnabledEntry.get(autoAimEnabled);
 
+
         updateStartConditions();
 
         if(Robot.isReal()) visionPeriodic();
@@ -437,6 +438,10 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             initialStartPose2d = PoseConstants.START_POSE_BLUE_LEFT;
             resetPose(initialStartPose2d);
         }
+
+        llLeftEnabledEntry.set(true);
+        llRightEnabledEntry.set(true);
+        disabledLocoEnabledEntry.set(true);
     }
 
     public Pose2d getInitialStartPose()
@@ -449,9 +454,17 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         resetPose(initialStartPose2d);
     }
 
-    public ChassisSpeeds getFieldSpeeds()
+    public ChassisSpeeds getSpeeds()
     {
         return getState().Speeds;
+    }
+
+    public ChassisSpeeds getFieldSpeeds()
+    {
+        return ChassisSpeeds.fromRobotRelativeSpeeds(
+            getState().Speeds,
+            getPose().getRotation()
+        );
     }
 
     public void updateStartConditions()
@@ -555,7 +568,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     if(!doRejectUpdate)
     {
-        if(!doRejectLeft && llLeftEnabledEntry.get(false))
+        if(!doRejectLeft && llLeftEnabledEntry.get(true))
         {
             setVisionMeasurementStdDevs(VecBuilder.fill(.6,.6,9999999));
             addVisionMeasurement(
@@ -564,7 +577,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             );
         }
 
-        if(!doRejectRight && llRightEnabledEntry.get(false))
+        if(!doRejectRight && llRightEnabledEntry.get(true))
         {
             setVisionMeasurementStdDevs(VecBuilder.fill(.6,.6,9999999));
             addVisionMeasurement(

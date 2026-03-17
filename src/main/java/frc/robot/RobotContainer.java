@@ -27,14 +27,22 @@ import frc.robot.utils.SwerveFieldContactSim;
 
 import static edu.wpi.first.units.Units.Meters;
 
+import java.util.jar.Attributes.Name;
+
+import com.fasterxml.jackson.databind.util.Named;
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
+
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
 public class RobotContainer {
 
+  private final SendableChooser<Command> autoChooser;
   private final CommandXboxController m_driverController;
 
   private final CommandSwerveDrivetrain m_drivetrainSubsystem;
@@ -78,6 +86,15 @@ public class RobotContainer {
 
     configureBindings();
 
+    boolean isCompetition = false;
+    autoChooser = AutoBuilder.buildAutoChooserWithOptionsModifier(
+      (stream) -> isCompetition
+        ? stream.filter(auto -> auto.getName().startsWith("comp"))
+        : stream
+    );
+
+    SmartDashboard.putData("Conf/Auto Chooser", autoChooser);
+
     if (Robot.isSimulation()) {
       configureSims();
     }
@@ -93,10 +110,15 @@ public class RobotContainer {
     m_driverController.a().whileTrue(m_aimAndPassCommand).onFalse(m_idleDeployedCommand);
     m_driverController.y().whileTrue(m_aimAndShootCommand).onFalse(m_idleDeployedCommand);
 
+    NamedCommands.registerCommand("IdleRetractedCommand", new IdleRetractedCommand(m_theMachine));
+    NamedCommands.registerCommand("IdleDeployedCommand", new IdleDeployedCommand(m_theMachine));
+    NamedCommands.registerCommand("IntakeCommand", new IntakeCommand(m_theMachine));
+    NamedCommands.registerCommand("AimAndPassCommand", new AimAndPassCommand(m_drivetrainSubsystem, m_driverController, m_theMachine));
+    NamedCommands.registerCommand("AimAndShootCommand", new AimAndShootCommand(m_drivetrainSubsystem, m_driverController, m_theMachine));
   }
 
   public Command getAutonomousCommand() {
-    return null;
+    return autoChooser.getSelected();
   }
 
   public void containerPeriodic() {
@@ -120,7 +142,7 @@ public class RobotContainer {
             Dimensions.BUMPER_LENGTH.in(Meters),
             Dimensions.BUMPER_HEIGHT.in(Meters),
             m_drivetrainSubsystem::getPose,
-            m_drivetrainSubsystem::getFieldSpeeds);
+            m_drivetrainSubsystem::getSpeeds);
     
     fuelSim.registerIntake(
             Dimensions.BUMPER_LENGTH.div(2).in(Meters),

@@ -82,6 +82,9 @@ public class AimAndPassCommand extends Command {
   private Pose2d robotPose = new Pose2d();
   double angleError = 10;
 
+  double velocityRPS = 0.0;
+  double hoodAngle = 0.0;
+
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
@@ -90,16 +93,14 @@ public class AimAndPassCommand extends Command {
     angleError = targetAngle - robotPose.getRotation().getRadians();
     angleError = Math.atan2(Math.sin(angleError), Math.cos(angleError));
 
-    if(!Container.isBlue) targetAngle += Math.PI;
-
     swerveDrivetrain.setControl(
         drive.withVelocityX(-driverController.getLeftY() * MaxSpeed) // Drive forward with negative Y (forward)
             .withVelocityY(-driverController.getLeftX() * MaxSpeed) // Drive left with negative X (left)
             .withTargetDirection(new Rotation2d(targetAngle))// Drive counterclockwise with negative X (left)
     );
 
-    double velocityRPS = ShooterCalculator.calculatePassSpeedFromCurrentPose(robotPose);
-    double hoodAngle = ShooterCalculator.calculatePassHoodAngle();
+    velocityRPS = ShooterCalculator.calculatePassSpeedFromCurrentPose(robotPose);
+    hoodAngle = ShooterCalculator.calculatePassHoodAngle();
 
     if (Math.abs(angleError) < DriveConstants.AIMING_TOLERANCE_RADIANS) {
       theMachine.pass(velocityRPS, hoodAngle);

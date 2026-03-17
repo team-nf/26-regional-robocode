@@ -63,7 +63,7 @@ public class IntakeConstants {
     // Default ID of -1 indicates "no dedicated arm motor configured"; callers may
     // choose to fallback to using the intake motor instead.
 
-    
+     /* 
     public static final Angle INTAKE_ARM_DEPLOYED_ANGLE = Degrees.of(1);
     public static final Angle INTAKE_ARM_RETRACTED_ANGLE = Degrees.of(110);
     public static final Angle INTAKE_ARM_START_ANGLE = Degrees.of(120);
@@ -71,13 +71,13 @@ public class IntakeConstants {
     public static final Angle INTAKE_FEED_ANGLE = Degrees.of(60);
     public static final Angle INTAKE_ARM_BETWEEN_ANGLE = Degrees.of(17.5);
 
-    /* 
+   */
     public static final Angle INTAKE_ARM_DEPLOYED_ANGLE = Degrees.of(0);
     public static final Angle INTAKE_ARM_RETRACTED_ANGLE = Degrees.of(0);
     public static final Angle INTAKE_ARM_START_ANGLE = Degrees.of(0);
     
     public static final Angle INTAKE_FEED_ANGLE = Degrees.of(0);
-    public static final Angle INTAKE_ARM_BETWEEN_ANGLE = Degrees.of(0);*/
+    public static final Angle INTAKE_ARM_BETWEEN_ANGLE = Degrees.of(0);
     
     public static final Angle INTAKE_ARM_ALLOWABLE_ERROR = Degrees.of(10);
 

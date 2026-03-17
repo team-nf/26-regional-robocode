@@ -39,10 +39,10 @@ public final class ShooterCalculator {
     // Reusable result array to avoid allocation every loop
     private static final double[] shootingParams = new double[2];
 
-    public static double getDistanceToHubWithSpeedCalculation(ChassisSpeeds speeds, Pose2d pose, double time) {
+    public static double getDistanceToHubWithSpeedCalculation(double filteredSpeedX, double filteredSpeedY, Pose2d pose, double time) {
         Translation2d hub = getHubTranslation();
-        double dx = hub.getX() - speeds.vxMetersPerSecond * time - pose.getX();
-        double dy = hub.getY() - speeds.vyMetersPerSecond * time - pose.getY();
+        double dx = hub.getX() - filteredSpeedX * time - pose.getX();
+        double dy = hub.getY() - filteredSpeedY * time - pose.getY();
         return Math.hypot(dx, dy);
     }
 
@@ -50,8 +50,8 @@ public final class ShooterCalculator {
         return Math.abs(getHubTranslation().getX() - pose.getTranslation().getX());
     }
 
-    public static double[] calculateShootingParameters(ChassisSpeeds speeds, Pose2d pose, double time) {
-        double distance = getDistanceToHubWithSpeedCalculation(speeds, pose, time);
+    public static double[] calculateShootingParameters(double filteredSpeedX, double filteredSpeedY, Pose2d pose, double time) {
+        double distance = getDistanceToHubWithSpeedCalculation(filteredSpeedX, filteredSpeedY, pose, time);
 
         double wheelSpeed;
 
@@ -164,6 +164,6 @@ public final class ShooterCalculator {
             return 0.65;
         }
 
-        return ((a * x + b) * x + c);
+        return ((a * x + b) * x + c) + 0.0;
     }
 }
