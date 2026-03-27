@@ -7,9 +7,13 @@ package frc.robot;
 import frc.robot.Constants.OperatorConstants;
 import frc.robot.commands.AimAndPassCommand;
 import frc.robot.commands.AimAndShootCommand;
+import frc.robot.commands.GoFromLeftTrenchCommand;
+import frc.robot.commands.GoFromRightTrenchCommand;
 import frc.robot.commands.IdleDeployedCommand;
 import frc.robot.commands.IdleRetractedCommand;
 import frc.robot.commands.IntakeCommand;
+import frc.robot.commands.ReturnFromLeftTrenchCommand;
+import frc.robot.commands.ReturnFromRightTrenchCommand;
 import frc.robot.commands.SwerveTeleopCommand;
 import frc.robot.constants.Dimensions;
 import frc.robot.constants.States.TheMachineStates.TheMachineState;
@@ -38,6 +42,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 
 public class RobotContainer {
@@ -61,7 +66,6 @@ public class RobotContainer {
   private final IntakeCommand m_intakeCommand;
 
   public RobotContainer() {
-
     Container.isBlue = DriverStation.getAlliance().map(a -> a == DriverStation.Alliance.Blue).orElse(true);
 
     m_driverController =
@@ -74,7 +78,6 @@ public class RobotContainer {
     m_hopperSubsystem = new HopperSubsystem();
     m_intakeSubsystem = new IntakeSubsystem();
     m_theMachine = new TheMachine(m_shooterSubsystem, m_hopperSubsystem, m_intakeSubsystem, m_feederSubsystem);
-
 
     m_swerveTeleopCommand = new SwerveTeleopCommand(m_drivetrainSubsystem, m_driverController);
 
@@ -109,6 +112,33 @@ public class RobotContainer {
 
     m_driverController.a().whileTrue(m_aimAndPassCommand).onFalse(m_idleDeployedCommand);
     m_driverController.y().whileTrue(m_aimAndShootCommand).onFalse(m_idleDeployedCommand);
+    
+
+    /* 
+    m_driverController.leftBumper().whileTrue(
+      new ConditionalCommand(new GoFromLeftTrenchCommand(m_drivetrainSubsystem, m_theMachine),
+                             new GoFromRightTrenchCommand(m_drivetrainSubsystem, m_theMachine),
+                             m_drivetrainSubsystem::isRobotOnLeftSide));
+
+    m_driverController.rightBumper().whileTrue(
+      new ConditionalCommand(new ReturnFromLeftTrenchCommand(m_drivetrainSubsystem, m_theMachine),
+                             new ReturnFromRightTrenchCommand(m_drivetrainSubsystem, m_theMachine),
+                             m_drivetrainSubsystem::isRobotOnLeftSide));
+    */
+
+    m_driverController.leftBumper().whileTrue(
+      new ConditionalCommand(
+        new ConditionalCommand(new GoFromLeftTrenchCommand(m_drivetrainSubsystem, m_theMachine),
+                               new GoFromRightTrenchCommand(m_drivetrainSubsystem, m_theMachine),
+                               m_drivetrainSubsystem::isRobotOnLeftSide),
+
+        new ConditionalCommand(new ReturnFromLeftTrenchCommand(m_drivetrainSubsystem, m_theMachine),
+                               new ReturnFromRightTrenchCommand(m_drivetrainSubsystem, m_theMachine),
+                               m_drivetrainSubsystem::isRobotOnLeftSide)
+                               .andThen(new AimAndShootCommand(m_drivetrainSubsystem, m_driverController, m_theMachine)),
+                              
+        m_drivetrainSubsystem::isRobotOnTheShootingZone
+      ));
 
     NamedCommands.registerCommand("IdleRetractedCommand", new IdleRetractedCommand(m_theMachine));
     NamedCommands.registerCommand("IdleDeployedCommand", new IdleDeployedCommand(m_theMachine));

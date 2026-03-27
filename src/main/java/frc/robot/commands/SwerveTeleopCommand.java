@@ -19,7 +19,7 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 public class SwerveTeleopCommand extends Command {
   /** Creates a new SwerveTeleopCommand. */
 
-  private double MaxSpeed = 0.75 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
+  private double MaxSpeed = 0.9 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
   private double MaxAngularRate = RotationsPerSecond.of(1).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
 
   private SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()

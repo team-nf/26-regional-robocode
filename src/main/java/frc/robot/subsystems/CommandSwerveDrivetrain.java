@@ -766,4 +766,28 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
             resetWithMT1();
         });
      }
+
+    public boolean isRobotOnLeftSide()
+    {
+        if(Container.isBlue)
+        {
+            return (getPose().getY() > 4.0);
+        }
+        else
+        {
+            return (getPose().getY() < 4.0);
+        }
+    }
+
+    public boolean isRobotOnTheShootingZone()
+    {
+        if(Container.isBlue)
+        {
+            return (getPose().getX() < 4.0);
+        }
+        else
+        {
+            return (getPose().getX() > 12.0);
+        }
+    }
 }

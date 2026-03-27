@@ -20,7 +20,7 @@ public class DriveConstants {
         3.0, 3.0, 2 * Math.PI, 4 * Math.PI);
 
     public static final PathConstraints PATH_CONSTRAINTS_FOLLOW_PATH = new PathConstraints(
-        4.0, 4.0, 3 * Math.PI, 6 * Math.PI);
+        5.0, 6.0, 3 * Math.PI, 6 * Math.PI);
 
     public static final AngularVelocity AIMING_MAX_ANGULAR_VELOCITY = RotationsPerSecond.of(0.7);
     public static final double AIMING_kP = 8.5;
