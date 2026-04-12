@@ -85,6 +85,7 @@ public class MatchTrackerSim {
                 {
                     isFirstPhaseBlue = true;
                 }
+                // Tie: keep previous isFirstPhaseBlue value
             } else if (matchTime > matchPeriods[3]) {
                 isPhaseBlue = isFirstPhaseBlue;
                 isPhaseRed = !isFirstPhaseBlue;

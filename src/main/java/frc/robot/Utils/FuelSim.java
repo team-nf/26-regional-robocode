@@ -77,7 +77,10 @@ public class FuelSim {
         new Translation3d(FIELD_LENGTH - 4.61 + TRENCH_BAR_WIDTH / 2, FIELD_WIDTH, TRENCH_HEIGHT + TRENCH_BAR_HEIGHT),
     };
 
+    private static int nextFuelId = 0;
+
     private class Fuel {
+        private final int id = nextFuelId++;
         private Translation3d pos;
         private Translation3d vel;
 
@@ -270,7 +273,7 @@ public class FuelSim {
                     if (i >= 0 && i < GRID_COLS && j >= 0 && j < GRID_ROWS) {
                         for (Fuel other : grid[i][j]) {
                             if (fuel != other && fuel.pos.getDistance(other.pos) < FUEL_RADIUS * 2) {
-                                if (fuel.hashCode() < other.hashCode()) {
+                                if (fuel.id < other.id) {
                                     handleFuelCollision(fuel, other);
                                 }
                             }

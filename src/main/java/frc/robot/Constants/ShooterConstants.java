@@ -8,8 +8,6 @@ import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
-import java.net.http.HttpResponse.PushPromiseHandler;
-
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.FeedbackConfigs;
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
@@ -34,7 +32,7 @@ public class ShooterConstants {
     public static final int HOOD_MOTOR_ID = 55;
 
     // Shooter Math Constants
-    public static final double SHOOTER_VELOCITY_TRANSFER_COEFFICIENT = 0.85; // in meters (2 inches)
+    public static final double SHOOTER_VELOCITY_TRANSFER_COEFFICIENT = 0.81;
     public static final double SHOOTER_VELOCITY_SIM_TRANSFER_COEFFICIENT = 0.62; // in meters (2 inches)
 
     // Configs
@@ -106,7 +104,7 @@ public class ShooterConstants {
 
 
     public static final MotorOutputConfigs HOOD_MOTOR_OUTPUT_CONFIGS = new MotorOutputConfigs().withInverted(InvertedValue.CounterClockwise_Positive)
-        .withNeutralMode(NeutralModeValue.Coast);
+        .withNeutralMode(NeutralModeValue.Brake);
 
     public static final TalonFXConfiguration HOOD_CONFIG = new TalonFXConfiguration()
             .withSlot0(HOOD_PID_CONFIGS)
@@ -138,6 +136,7 @@ public class ShooterConstants {
     public static final Angle MIN_HOOD_ANGLE = Degrees.of(0);
     public static final Angle MAX_HOOD_ANGLE = Degrees.of(20);
     public static final Angle PASS_HOOD_ANGLE = Degrees.of(10);
+    public static final Angle HOOD_ANGLE_OFFSET = Degrees.of(18);
 
 
     public static final Angle MIN_HOOD_MOTOR_ANGLE = MIN_HOOD_ANGLE.times(HOOD_GEAR_REDUCTION);

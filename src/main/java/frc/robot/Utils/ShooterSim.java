@@ -15,7 +15,7 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import frc.robot.Constants.Dimensions;
 import frc.robot.Constants.ShooterConstants;
-import frc.robot.Subsytems.Shooter.Utils.ShooterControlData;
+import frc.robot.Subsystems.Shooter.Utils.ShooterControlData;
 
 /** Add your docs here. */
 public class ShooterSim {
@@ -51,7 +51,7 @@ public class ShooterSim {
     }
 
     private double fuelPerSecondLimit = 6.0; // Default limit
-    private double lastShootTime = 0;
+    private double lastShootTime = -1;
     private int fuelShotCount = 0;
 
     public void setFuelPerSecondLimit(double limit) {
@@ -71,7 +71,7 @@ public class ShooterSim {
                     new Transform3d(new Translation3d(robotPoseSupplier.get().getX(), robotPoseSupplier.get().getY(), 0), 
                     new Rotation3d(robotPoseSupplier.get().getRotation()));
 
-            double launchAngle = Math.PI / 2 - Math.toRadians((controlData.hoodAngle)*360+18);
+            double launchAngle = Math.PI / 2 - Math.toRadians((controlData.hoodAngle)*360+ShooterConstants.HOOD_ANGLE_OFFSET.in(Degrees));
             double fuelVelocity = controlData.flywheelVelocityL * 2 * Math.PI * ShooterConstants.FLYWHEEL_RADIUS.in(Meters) * ShooterConstants.SHOOTER_VELOCITY_SIM_TRANSFER_COEFFICIENT;
 
             Pose3d leftFuelShootPose = new Pose3d(

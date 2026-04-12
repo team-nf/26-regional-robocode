@@ -84,16 +84,16 @@ public class Robot extends TimedRobot {
   @Override
   public void testExit() {}
 
-  private Notifier swerveSimNotrifier;
+  private Notifier swerveSimNotifier;
 
   @Override
   public void simulationInit() {
     
-    swerveSimNotrifier = new Notifier(() -> {
+    swerveSimNotifier = new Notifier(() -> {
       SwerveFieldContactSim.getInstance().handleSwerveSimFieldCollisions();
     });
     
-    swerveSimNotrifier.startPeriodic(SwerveFieldContactSim.getInstance().simLoopTimeSec);
+    swerveSimNotifier.startPeriodic(SwerveFieldContactSim.getInstance().simLoopTimeSec);
     
   }
 

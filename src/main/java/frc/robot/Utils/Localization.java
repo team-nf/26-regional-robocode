@@ -14,7 +14,7 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.States.SwerveStates.SwerveState;
-import frc.robot.Subsytems.Swerve.CommandSwerveDrivetrain;
+import frc.robot.Subsystems.Swerve.CommandSwerveDrivetrain;
 import frc.robot.Utils.LimelightHelpers;
 import frc.robot.Utils.LimelightHelpers.PoseEstimate;
 
@@ -86,7 +86,7 @@ public class Localization {
 
     if(!doRejectUpdate)
     {
-        if(!doRejectLeft && SmartDashboard.getBoolean("Conf/LL-Left_Enabled", false))
+        if(!doRejectLeft && SmartDashboard.getBoolean("Conf/LL-Left_Enabled", true))
         {
             drivetrain.setVisionMeasurementStdDevs(VecBuilder.fill(.6,.6,9999999));
 
@@ -96,7 +96,7 @@ public class Localization {
             );
         }
 
-        if(!doRejectRight && SmartDashboard.getBoolean("Conf/LL-Right_Enabled", false))
+        if(!doRejectRight && SmartDashboard.getBoolean("Conf/LL-Right_Enabled", true))
         {
             drivetrain.setVisionMeasurementStdDevs(VecBuilder.fill(.6,.6,9999999));
             drivetrain.addVisionMeasurement(
@@ -149,9 +149,9 @@ public class Localization {
         {
             doRejectRight = true;
         }
-        if(limelightMeasurementLeft.avgTagDist > 3.5)
+        if(limelightMeasurementRight.avgTagDist > 3.5)
             {
-                doRejectLeft = true;
+                doRejectRight = true;
             }
     }
     else doRejectRight = true;

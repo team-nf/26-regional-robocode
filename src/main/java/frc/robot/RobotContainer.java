@@ -34,13 +34,13 @@ import frc.robot.Constants.States.ShooterStates.FlywheelState;
 import frc.robot.Constants.States.ShooterStates.ShooterControlState;
 import frc.robot.Constants.States.TheMachineStates.TheMachineControlState;
 import frc.robot.Constants.TelemetryConstants;
-import frc.robot.Subsytems.Feeder.FeederSubsystem;
-import frc.robot.Subsytems.Hopper.HopperSubsystem;
-import frc.robot.Subsytems.Intake.IntakeSubsystem;
-import frc.robot.Subsytems.Shooter.ShooterSubsystem;
-import frc.robot.Subsytems.Shooter.Utils.ShooterCalculator;
-import frc.robot.Subsytems.Swerve.CommandSwerveDrivetrain;
-import frc.robot.Subsytems.TheMachine.TheMachine;
+import frc.robot.Subsystems.Feeder.FeederSubsystem;
+import frc.robot.Subsystems.Hopper.HopperSubsystem;
+import frc.robot.Subsystems.Intake.IntakeSubsystem;
+import frc.robot.Subsystems.Shooter.ShooterSubsystem;
+import frc.robot.Subsystems.Shooter.Utils.ShooterCalculator;
+import frc.robot.Subsystems.Swerve.CommandSwerveDrivetrain;
+import frc.robot.Subsystems.TheMachine.TheMachine;
 import frc.robot.Utils.FuelSim;
 import frc.robot.Utils.HopperSim;
 import frc.robot.Utils.Localization;
@@ -49,8 +49,6 @@ import frc.robot.Utils.ShooterSim;
 import frc.robot.Utils.SwerveFieldContactSim;
 
 import static edu.wpi.first.units.Units.*;
-
-import java.util.jar.Attributes.Name;
 
 public class RobotContainer {
 
@@ -126,8 +124,7 @@ public class RobotContainer {
           new ConditionalCommand(
               m_theMachine.testRequest()
               ,
-              (m_swerveDrivetrain.aimToHub().unless(m_swerveDrivetrain::isAutoAimDisabled))
-                .alongWith(m_swerveDrivetrain.waitForAtAim(), m_theMachine.getReadyRequest()).andThen(m_theMachine.shootRequest())
+              createHeldHubShootSequence()
               ,
               m_swerveDrivetrain::isRobotInNeutralZone
             ))
@@ -146,21 +143,15 @@ public class RobotContainer {
         .onTrue(m_theMachine.idleDeployedRequest());
 
     m_driverController.leftBumper()
-        .whileTrue((m_swerveDrivetrain.aimToPass().unless(m_swerveDrivetrain::isAutoAimDisabled))
-            .alongWith(m_swerveDrivetrain.waitForAtAim(), m_theMachine.getReadyRequestPas()).andThen(m_theMachine.testRequest()))
+        .whileTrue(createHeldPassShootSequence())
         .onFalse(m_theMachine.intakeRequest());
 
     m_driverController.rightBumper()
-      .whileTrue(
-              (m_swerveDrivetrain.aimToHub().unless(m_swerveDrivetrain::isAutoAimDisabled))
-              .alongWith(m_swerveDrivetrain.waitForAtAim(), m_theMachine.getReadyRequest()).andThen(m_theMachine.shootRequest()))
+      .whileTrue(createHeldHubShootSequence())
           .onFalse(m_theMachine.intakeRequest());
 
     m_driverController.povUp()
           .onTrue(m_theMachine.idleRequest());
-
-    m_driverController.start()
-        .onTrue(m_swerveDrivetrain.resetToStartPoseCmd());
 
     m_driverController.start()
         .onTrue(m_swerveDrivetrain.resetPoseWithMT1Command());
@@ -170,10 +161,7 @@ public class RobotContainer {
      
 
     NamedCommands.registerCommand("AimAndShoot", 
-          m_swerveDrivetrain.aimToHub()
-            .alongWith(m_swerveDrivetrain.waitForAtAim(), m_theMachine.getReadyRequest()).andThen(m_theMachine.shootRequest())
-            .withTimeout(Seconds.of(5))
-            .andThen(m_theMachine.idleRetractedRequest()));
+          createAutoHubShootSequence());
 
     NamedCommands.registerCommand("MachineIntakeRequest", m_theMachine.intakeRequest());
     NamedCommands.registerCommand("MachineIdleDeployedRequest", m_theMachine.idleDeployedRequest());
@@ -198,6 +186,55 @@ public class RobotContainer {
     NamedCommands.registerCommand("MoveToShoot8", m_swerveDrivetrain.moveToShoot8());
       
     }
+
+  private Command createHeldHubShootSequence() {
+    return Commands.either(
+        m_theMachine.getReadyRequest()
+            .andThen(m_theMachine.waitForShooter())
+            .andThen(m_theMachine.shootRequest()),
+        m_swerveDrivetrain.aimToHub().deadlineFor(
+            m_theMachine.getReadyRequest()
+                .andThen(m_theMachine.waitForShooter().alongWith(m_swerveDrivetrain.waitForAtAim()))
+                .andThen(m_theMachine.shootRequest())),
+        m_swerveDrivetrain::isAutoAimDisabled);
+  }
+
+  private Command createHeldPassShootSequence() {
+    return Commands.either(
+        m_theMachine.getReadyRequestPas()
+            .andThen(m_theMachine.waitForShooter())
+            .andThen(m_theMachine.testRequest()),
+        m_swerveDrivetrain.aimToPass().deadlineFor(
+            m_theMachine.getReadyRequestPas()
+                .andThen(m_theMachine.waitForShooter().alongWith(m_swerveDrivetrain.waitForAtAim()))
+                .andThen(m_theMachine.testRequest())),
+        m_swerveDrivetrain::isAutoAimDisabled);
+  }
+
+  private Command createAutoHubShootSequence() {
+    return Commands.either(
+        m_theMachine.getReadyRequest()
+            .andThen(m_theMachine.waitForShooter().withTimeout(3.0))
+            .andThen(Commands.either(
+                m_theMachine.shootRequest()
+                    .andThen(new WaitCommand(4.0))
+                    .andThen(m_theMachine.idleRetractedRequest()),
+                m_theMachine.idleRetractedRequest(),
+                m_shooterSubsystem::isShooterReadyToShoot)),
+        Commands.deadline(
+            m_theMachine.getReadyRequest()
+                .andThen(m_theMachine.waitForShooter()
+                    .alongWith(m_swerveDrivetrain.waitForAtAim())
+                    .withTimeout(3.0))
+                .andThen(Commands.either(
+                    m_theMachine.shootRequest()
+                        .andThen(new WaitCommand(4.0))
+                        .andThen(m_theMachine.idleRetractedRequest()),
+                    m_theMachine.idleRetractedRequest(),
+                    () -> m_swerveDrivetrain.isAimed() && m_shooterSubsystem.isShooterReadyToShoot())),
+            m_swerveDrivetrain.aimToHub()),
+        m_swerveDrivetrain::isAutoAimDisabled);
+  }
 
     
   private void configureSims() {

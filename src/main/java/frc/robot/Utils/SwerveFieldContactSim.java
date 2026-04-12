@@ -15,7 +15,7 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.Dimensions;
 import frc.robot.Constants.PoseConstants;
-import frc.robot.Subsytems.Swerve.CommandSwerveDrivetrain;
+import frc.robot.Subsystems.Swerve.CommandSwerveDrivetrain;
 
 public class SwerveFieldContactSim {
     public double simLoopTimeSec = 0.001; 
@@ -139,7 +139,7 @@ public class SwerveFieldContactSim {
             }
             
             if (collisionDetected) {
-                m_swerveDrivetrain.resetPose(new Pose2d(correctedX, correctedY, prevSimPose.getRotation()));
+                m_swerveDrivetrain.resetPose(new Pose2d(correctedX, correctedY, correctedRotation2d));
             }
             else prevSimPose = currentSimPose;
             
@@ -170,15 +170,20 @@ public class SwerveFieldContactSim {
             double x = point.getX();
             double y = point.getY();
 
+            boolean cornerXPlus = false;
+            boolean cornerXMinus = false;
+            boolean cornerYPlus = false;
+            boolean cornerYMinus = false;
+
             for (double[] collisionYRange : Dimensions.getCollisionValuesForY(x)) {
                     if (collisionYRange[0] == -1.0 && collisionYRange[1] == -1.0) {
                         continue;
                     }
                     if (y > collisionYRange[0] && y < collisionYRange[1]) {
                         if ((y - collisionYRange[0]) < (collisionYRange[1] - y)) {
-                            y_plus_collided = true;
+                            cornerYPlus = true;
                         } else {
-                            y_minus_collided = true;
+                            cornerYMinus = true;
                         }
                     }
             }
@@ -189,13 +194,17 @@ public class SwerveFieldContactSim {
                     }
                     if (x > collisionXRange[0] && x < collisionXRange[1]) {
                         if ((x - collisionXRange[0]) < (collisionXRange[1] - x)) {
-                            x_plus_collided = true;
+                            cornerXPlus = true;
                         } else {
-                            x_minus_collided = true;
+                            cornerXMinus = true;
                         }
                     }
             }
-            cornerCollisionCheck[i] = x_minus_collided || x_plus_collided || y_minus_collided || y_plus_collided;
+            if (cornerXPlus) x_plus_collided = true;
+            if (cornerXMinus) x_minus_collided = true;
+            if (cornerYPlus) y_plus_collided = true;
+            if (cornerYMinus) y_minus_collided = true;
+            cornerCollisionCheck[i] = cornerXMinus || cornerXPlus || cornerYMinus || cornerYPlus;
         }
 
         if(cornerCollisionCheck[0] && !cornerCollisionCheck[1] && !cornerCollisionCheck[2]) {
@@ -273,6 +282,7 @@ public class SwerveFieldContactSim {
     }
 
     public void reset() {
+        if (m_swerveDrivetrain == null) return;
         currentSimPose = m_swerveDrivetrain.getInitialStartPose();
         prevSimPose = m_swerveDrivetrain.getInitialStartPose();
         m_swerveDrivetrain.resetPose(currentSimPose);

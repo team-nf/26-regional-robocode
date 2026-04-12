@@ -14,8 +14,6 @@ import edu.wpi.first.units.measure.*;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 import static edu.wpi.first.units.Units.*;
 
-import javax.security.auth.login.FailedLoginException;
-
 public class IntakeConstants {
     public static final int INTAKE_MOTOR_ID = 59;
 
