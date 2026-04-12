@@ -56,8 +56,7 @@ public class TunerConstants {
     // Some configs will be overwritten; check the `with*InitialConfigs()` API docum
     // ntation.
     private static final TalonFXConfiguration driveInitialConfigs = new TalonFXConfiguration();
-    // Configuration();
-        private static final TalonFXConfiguration steerInitialConfigs = new TalonFXConfiguration()
+    private static final TalonFXConfiguration steerInitialConfigs = new TalonFXConfiguration()
         .withCurrentLimits(
             new CurrentLimitsConfigs()
                 // Swerve azimuth does not require much torque output, so we can set a relatively low

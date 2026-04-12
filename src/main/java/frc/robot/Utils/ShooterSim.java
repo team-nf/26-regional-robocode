@@ -17,7 +17,6 @@ import frc.robot.Constants.Dimensions;
 import frc.robot.Constants.ShooterConstants;
 import frc.robot.Subsystems.Shooter.Utils.ShooterControlData;
 
-/** Add your docs here. */
 public class ShooterSim {
 
     private Supplier<ShooterControlData> shooterControlDataSupplier;

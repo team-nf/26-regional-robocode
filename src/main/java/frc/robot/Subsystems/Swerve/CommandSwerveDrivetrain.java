@@ -3,7 +3,6 @@ package frc.robot.Subsystems.Swerve;
 import static edu.wpi.first.units.Units.*;
 
 import java.io.IOException;
-import java.lang.annotation.Retention;
 import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
@@ -102,6 +101,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     private final SwerveRequest.SysIdSwerveRotation m_rotationCharacterization = new SwerveRequest.SysIdSwerveRotation();
 
     private boolean autoAimEnabled = true;
+    private boolean isRedAlliance = false;
 
     private final SendableChooser<String> startPoseChooser = new SendableChooser<>();
     private Pose2d initialStartPose2d = new Pose2d(0, 0, new Rotation2d());
@@ -264,52 +264,33 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         return !autoAimEnabled;
     }
 
+    public void cacheAlliance() {
+        isRedAlliance = DriverStation.getAlliance().map(a -> a == Alliance.Red).orElse(false);
+    }
+
+    public boolean isRedAlliance() {
+        return isRedAlliance;
+    }
+
     public void updateOfRobotPeriodic()
     {
     if (TelemetryConstants.SHOULD_SWERVE_DATA_COMMUNICATE) {
             SmartDashboard.putData("Swerve Control Data", swerveData);
         }
 
-        /* 
-        if (TelemetryConstants.SHOULD_SWERVE_FIELD_COMMUNICATE) {
-            SmartDashboard.putData("Field", swerveData.field);
-        }*/
+        cacheAlliance();
+        var robotTranslation = getPose().getTranslation();
+        var hubTranslation = isRedAlliance
+            ? PoseConstants.RED_HUB_AIM_POSE.getTranslation()
+            : PoseConstants.BLUE_HUB_AIM_POSE.getTranslation();
+        swerveData.distanceToHub = hubTranslation.getDistance(robotTranslation);
+        swerveData.xDistanceToHub = Math.abs(hubTranslation.getX() - robotTranslation.getX());
 
-        boolean isRed = DriverStation.getAlliance().map(a -> a == Alliance.Red).orElse(false);
-        if (isRed) {
-            swerveData.distanceToHub = (PoseConstants.RED_HUB_AIM_POSE.getTranslation().getDistance(getPose().getTranslation()));
-            swerveData.xDistanceToHub = (Math.abs(PoseConstants.RED_HUB_AIM_POSE.getTranslation().getX() - getPose().getTranslation().getX()));
-        } else {
-            swerveData.distanceToHub = (PoseConstants.BLUE_HUB_AIM_POSE.getTranslation().getDistance(getPose().getTranslation()));
-            swerveData.xDistanceToHub = (Math.abs(PoseConstants.BLUE_HUB_AIM_POSE.getTranslation().getX() - getPose().getTranslation().getX()));
-        }
-
-        if(!SmartDashboard.containsKey("Conf/AutoAimEnabled"))
+        if(DriverStation.isAutonomous())
         {
-            SmartDashboard.putBoolean("Conf/AutoAimEnabled", autoAimEnabled);
+            SmartDashboard.putBoolean("Conf/AutoAimEnabled", true);
         }
-        else
-        {
-            if(DriverStation.isAutonomous())
-            {
-                SmartDashboard.putBoolean("Conf/AutoAimEnabled", true);
-            }
-            
-            autoAimEnabled = SmartDashboard.getBoolean("Conf/AutoAimEnabled", autoAimEnabled);
-        }
-
-
-        /* 
-        if (DriverStation.isEnabled() && !isNeutralModeBrake)
-        {
-            configNeutralMode(NeutralModeValue.Brake);
-            isNeutralModeBrake = true;
-        }
-        else if (!DriverStation.isEnabled() && isNeutralModeBrake)
-        {
-            configNeutralMode(NeutralModeValue.Coast);
-            isNeutralModeBrake = false;
-        }*/
+        autoAimEnabled = SmartDashboard.getBoolean("Conf/AutoAimEnabled", autoAimEnabled);
 
         updateStartConditions();
         visionPeriodic();
@@ -338,31 +319,25 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         }
 
 
-        confField2d.setRobotPose(new Pose2d( TelemetryConstants.roundTelemetry(getPose().getX()),  TelemetryConstants.roundTelemetry(getPose().getY()), getPose().getRotation()));
-        SmartDashboard.putData("Conf/Field", confField2d);
-        SmartDashboard.putBoolean("Conf/isAimed", swerveData.isAimed);
-        //SmartDashboard.putString("Conf/InitialStartPose2d", initialStartPose2d.toString());
-        SmartDashboard.putBoolean("Conf/IsRobotInNeutral", isRobotInNeutralZone());
+        if (TelemetryConstants.SHOULD_SWERVE_FIELD_COMMUNICATE) {
+            confField2d.setRobotPose(new Pose2d( TelemetryConstants.roundTelemetry(getPose().getX()),  TelemetryConstants.roundTelemetry(getPose().getY()), getPose().getRotation()));
+            SmartDashboard.putData("Conf/Field", confField2d);
+            SmartDashboard.putBoolean("Conf/isAimed", swerveData.isAimed);
+            SmartDashboard.putBoolean("Conf/IsRobotInNeutral", isRobotInNeutralZone());
+        }
 
         
     }
 
     public void updateSwerveData(){
-        
-        swerveData.robotPose = getState().Pose;
+        var state = getState();
+        swerveData.robotPose = state.Pose;
 
-        Pose2d roundedRobotPose = new Pose2d(
-            TelemetryConstants.roundTelemetry(swerveData.robotPose.getX()), 
-            TelemetryConstants.roundTelemetry(swerveData.robotPose.getY()),
-            new Rotation2d(TelemetryConstants.roundTelemetry(swerveData.robotPose.getRotation().getRadians())));
-
-        //swerveData.field.setRobotPose(roundedRobotPose);
-
-        swerveData.robotVelocityX = MetersPerSecond.of(getState().Speeds.vxMetersPerSecond);
-        swerveData.robotVelocityY = MetersPerSecond.of(getState().Speeds.vyMetersPerSecond);
-        swerveData.robotSpeed =  MetersPerSecond.of(
-            Math.hypot(getState().Speeds.vxMetersPerSecond, getState().Speeds.vyMetersPerSecond));
-        swerveData.robotAngularVelocity = RadiansPerSecond.of(getState().Speeds.omegaRadiansPerSecond);
+        swerveData.robotVelocityX = MetersPerSecond.of(state.Speeds.vxMetersPerSecond);
+        swerveData.robotVelocityY = MetersPerSecond.of(state.Speeds.vyMetersPerSecond);
+        swerveData.robotSpeed = MetersPerSecond.of(
+            Math.hypot(state.Speeds.vxMetersPerSecond, state.Speeds.vyMetersPerSecond));
+        swerveData.robotAngularVelocity = RadiansPerSecond.of(state.Speeds.omegaRadiansPerSecond);
     }
 
     public void updateSwerveErrors(
@@ -413,7 +388,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     public double getGyroRate() {
         return getPigeon2().getAngularVelocityZWorld().getValueAsDouble();
-        //return getState().Speeds.omegaRadiansPerSecond;
     }
 
     public void gyroReset() {
@@ -533,7 +507,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
                 ),
                 config,
                 // Assume the path needs to be flipped for Red vs Blue, this is normally the case
-                () -> DriverStation.getAlliance().map(a -> a == Alliance.Red).orElse(false),
+                () -> isRedAlliance,
                 this // Subsystem for requirements
             );
         } catch (Exception ex) {
@@ -571,7 +545,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
         final PathPlannerPath pathToFollow;
 
-        if (DriverStation.getAlliance().map(a -> a == Alliance.Red).orElse(false)){
+        if (isRedAlliance){
             pathToFollow = path.flipPath();
         } else {
             pathToFollow = path;
@@ -587,7 +561,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
         final PathPlannerPath pathToFollow;
 
-        if (DriverStation.getAlliance().map(a -> a == Alliance.Red).orElse(false)){
+        if (isRedAlliance){
             pathToFollow = path.flipPath();
         }
         else{
@@ -606,7 +580,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
         final PathPlannerPath pathToFollow;
 
-        if (DriverStation.getAlliance().map(a -> a == Alliance.Red).orElse(false)){
+        if (isRedAlliance){
             pathToFollow = path.flipPath();
         }
         else{
@@ -633,15 +607,11 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         startPoseChooser.setDefaultOption("LEFT", "LEFT");
     
         SmartDashboard.putData("Conf/StartPoseChooser", startPoseChooser);
+        SmartDashboard.putBoolean("Conf/AutoAimEnabled", autoAimEnabled);
 
-        if(DriverStation.getAlliance().map(a -> a == Alliance.Red).orElse(false)){
-            initialStartPose2d = PoseConstants.START_POSE_RED_LEFT;
-            resetPose(initialStartPose2d);
-        }
-        else{
-            initialStartPose2d = PoseConstants.START_POSE_BLUE_LEFT;
-            resetPose(initialStartPose2d);
-        }
+        cacheAlliance();
+        initialStartPose2d = getStartPoseForSelection("LEFT");
+        resetPose(initialStartPose2d);
     }
 
     public void setStartPose()
@@ -692,48 +662,25 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     public Command pathFindToStartPose1()
     {
-        Pose2d targetPose = new Pose2d(-1,-1,new Rotation2d());
-
-        if(DriverStation.getAlliance().map(a -> a == Alliance.Red).orElse(false))
-        {
-            targetPose = PoseConstants.START_POSE_RED_RIGHT;
-        }
-        else targetPose = PoseConstants.START_POSE_BLUE_RIGHT;
-    
+        Pose2d targetPose = isRedAlliance
+            ? PoseConstants.START_POSE_RED_RIGHT
+            : PoseConstants.START_POSE_BLUE_RIGHT;
         return goToPose(targetPose);
     }
 
     public InstantCommand setStartPoseLeftCommand()
     {
-        return new InstantCommand(() -> {
-            if(DriverStation.getAlliance().map(a -> a == Alliance.Red).orElse(false))
-            {
-                resetPose(PoseConstants.START_POSE_RED_LEFT);
-            }
-            else resetPose(PoseConstants.START_POSE_BLUE_LEFT);
-        });
+        return new InstantCommand(() -> resetPose(getStartPoseForSelection("LEFT")));
     }
 
     public InstantCommand setStartPoseMiddleCommand()
     {
-        return new InstantCommand(() -> {
-            if(DriverStation.getAlliance().map(a -> a == Alliance.Red).orElse(false))
-            {
-                resetPose(PoseConstants.START_POSE_RED_MIDDLE);
-            }
-            else resetPose(PoseConstants.START_POSE_BLUE_MIDDLE);
-        });
+        return new InstantCommand(() -> resetPose(getStartPoseForSelection("MIDDLE")));
     }
 
     public InstantCommand setStartPoseRightCommand()
     {
-        return new InstantCommand(() -> {
-            if(DriverStation.getAlliance().map(a -> a == Alliance.Red).orElse(false))
-            {
-                resetPose(PoseConstants.START_POSE_RED_RIGHT);
-            }
-            else resetPose(PoseConstants.START_POSE_BLUE_RIGHT);
-        });
+        return new InstantCommand(() -> resetPose(getStartPoseForSelection("RIGHT")));
     }
 
      public void visionPeriodic()
@@ -757,39 +704,22 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         if(DriverStation.isDisabled())
         {
             String selectedStartPose = startPoseChooser.getSelected();
-            Pose2d selectedPose = new Pose2d();
-            if (DriverStation.getAlliance().map(a -> a == Alliance.Red).orElse(false)) {
-                switch (selectedStartPose) {
-                    case "LEFT":
-                        selectedPose = PoseConstants.START_POSE_RED_LEFT;
-                        break;
-                    case "MIDDLE":
-                        selectedPose = PoseConstants.START_POSE_RED_MIDDLE;
-                        break;
-                    case "RIGHT":
-                        selectedPose = PoseConstants.START_POSE_RED_RIGHT;
-                        break;
-                }
-            } else {
-                switch (selectedStartPose) {
-                    case "LEFT":
-                        selectedPose = PoseConstants.START_POSE_BLUE_LEFT;
-                        break;
-                    case "MIDDLE":
-                        selectedPose = PoseConstants.START_POSE_BLUE_MIDDLE;
-                        break;
-                    case "RIGHT":
-                        selectedPose = PoseConstants.START_POSE_BLUE_RIGHT;
-                        break;
-                }
-                
-            }
+            Pose2d selectedPose = getStartPoseForSelection(selectedStartPose);
 
             if(!selectedPose.equals(initialStartPose2d))
             {
                 initialStartPose2d = selectedPose;
                 resetPose(initialStartPose2d);
             }
+        }
+     }
+
+     private Pose2d getStartPoseForSelection(String selection) {
+        switch (selection) {
+            case "LEFT":   return isRedAlliance ? PoseConstants.START_POSE_RED_LEFT   : PoseConstants.START_POSE_BLUE_LEFT;
+            case "MIDDLE": return isRedAlliance ? PoseConstants.START_POSE_RED_MIDDLE : PoseConstants.START_POSE_BLUE_MIDDLE;
+            case "RIGHT":  return isRedAlliance ? PoseConstants.START_POSE_RED_RIGHT  : PoseConstants.START_POSE_BLUE_RIGHT;
+            default:       return isRedAlliance ? PoseConstants.START_POSE_RED_LEFT   : PoseConstants.START_POSE_BLUE_LEFT;
         }
      }
 
@@ -817,7 +747,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
         Pose2d pose = null;
 
-        if(DriverStation.getAlliance().map(a -> a == Alliance.Blue).orElse(true))
+        if(!isRedAlliance)
         {
             Pose2d startPose = PoseConstants.START_POSE_BLUE_MIDDLE;
             pose = new Pose2d(startPose.getX()-0.75, startPose.getY(), new Rotation2d(0));

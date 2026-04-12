@@ -10,7 +10,6 @@ import com.pathplanner.lib.path.PathConstraints;
 
 import edu.wpi.first.units.measure.AngularVelocity;
 
-/** Add your docs here. */
 public class DriveConstants {
     public static final int DRIVER_CONTROLLER_PORT = 0;
 
@@ -26,4 +25,7 @@ public class DriveConstants {
     public static final double AIMING_kD = 0.5;
 
     public static final double AIMING_TOLERANCE_RADIANS = Degrees.of(2).in(Radians);
+    public static final double PASS_AIMING_TOLERANCE_RADIANS = Degrees.of(6).in(Radians);
+
+    public static final int AIMING_ERROR_BUFFER_SIZE = 15;
 }

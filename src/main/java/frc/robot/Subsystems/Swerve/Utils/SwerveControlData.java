@@ -7,7 +7,6 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.units.measure.*;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
-import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.States.SwerveStates.SwerveState;
 import frc.robot.Constants.TelemetryConstants;
@@ -16,7 +15,6 @@ public class SwerveControlData implements Sendable {
 
     public SwerveState swerveControlState = SwerveState.TELEOP;
 
-    public Field2d field = new Field2d();
     public Pose2d robotPose = new Pose2d();
 
     public LinearVelocity robotVelocityX = MetersPerSecond.of(0.0);
@@ -44,8 +42,6 @@ public class SwerveControlData implements Sendable {
 
     @Override
     public void initSendable(SendableBuilder builder) {
-
-        field.setRobotPose(robotPose);
 
         builder.setSmartDashboardType("SwerveControlData");
 

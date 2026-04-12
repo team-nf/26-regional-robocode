@@ -8,22 +8,10 @@ import static edu.wpi.first.units.Units.*;
 
 import java.util.function.Supplier;
 
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.units.measure.*;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import frc.robot.Constants.Dimensions;
-import frc.robot.Constants.PoseConstants;
 import frc.robot.Constants.ShooterConstants;
-import frc.robot.Constants.TelemetryConstants;
 import frc.robot.Subsystems.Swerve.Utils.SwerveControlData;
 
-/** Add your docs here. */
 public class ShooterCalculator {
 
     Supplier<SwerveControlData> swerveDataSupplier;
@@ -32,117 +20,43 @@ public class ShooterCalculator {
         this.swerveDataSupplier = swerveDataSupplier;
     }
 
-    public double calculateFlywheelSpeed(double distanceToTargetMeters, double launchAngleDegrees, double initialHeightMeters, double targetHeightMeters) {
-        // Placeholder implementation
-        // Replace with actual physics calculations to determine the required wheel speed
-        double requiredSpeed = Math.sqrt(9.81 * distanceToTargetMeters); // Simplified example
-        return requiredSpeed;
-    }
-
-    public double calculateHoodAngle(double distanceToTargetMeters, double initialHeightMeters, double targetHeightMeters) {
-        // Placeholder implementation
-        // Replace with actual calculations to determine the required hood angle
-        double angle = Math.toDegrees(Math.atan2(targetHeightMeters - initialHeightMeters, distanceToTargetMeters));
-        return angle/360;
-    }
-
-
     public double calculateFlywheelSpeedFromCurrentPose()
     {
 
         double wheelSpeed = flywheelRPMFormula(swerveDataSupplier.get().distanceToHub);
-
-        //wheelSpeed /= ShooterConstants.SHOOTER_VELOCITY_TRANSFER_COEFFICIENT;
-
-        //SmartDashboard.putNumber("WheelSpeedCalculated", wheelSpeed);
-
-
-        //if(SmartDashboard.getBoolean("UseManualShooterValues", false))
-        //{
-          //  wheelSpeed = SmartDashboard.getNumber("ManualFlywheelRpm", wheelSpeed);
-        //}
-        //SmartDashboard.putNumber("Conf/CalcRPM", TelemetryConstants.roundTelemetry(wheelSpeed));
-
         wheelSpeed /= 60;
-
-
-
-        wheelSpeed = Math.max(ShooterConstants.MIN_FLYWHEEL_SPEED.in(RotationsPerSecond), Math.min(wheelSpeed, ShooterConstants.MAX_FLYWHEEL_SPEED.in(RotationsPerSecond))); // Clamp between min and max wheel speeds
-
+        wheelSpeed = Math.max(ShooterConstants.MIN_FLYWHEEL_SPEED.in(RotationsPerSecond), Math.min(wheelSpeed, ShooterConstants.MAX_FLYWHEEL_SPEED.in(RotationsPerSecond)));
         return wheelSpeed;
-        //return RotationsPerSecond.of(35);
     }
 
-        public double calculatePassSpeedFromCurrentPose()
+    public double calculatePassSpeedFromCurrentPose()
     {
         double wheelSpeed = pasRPMFormula(swerveDataSupplier.get().xDistanceToHub);
-
-        //wheelSpeed /= ShooterConstants.SHOOTER_VELOCITY_TRANSFER_COEFFICIENT;
-
-        //SmartDashboard.putNumber("WheelSpeedCalculated", wheelSpeed);
-
-
-        //if(SmartDashboard.getBoolean("UseManualShooterValues", false))
-        //{
-          //  wheelSpeed = SmartDashboard.getNumber("ManualFlywheelRpm", wheelSpeed);
-        //}
-        //SmartDashboard.putNumber("Conf/CalcPassRPM", TelemetryConstants.roundTelemetry(wheelSpeed));
-
         wheelSpeed /= 60;
-
-
-
-        wheelSpeed = Math.max(ShooterConstants.MIN_FLYWHEEL_SPEED.in(RotationsPerSecond), Math.min(wheelSpeed, ShooterConstants.MAX_FLYWHEEL_SPEED.in(RotationsPerSecond))); // Clamp between min and max wheel speeds
-
+        wheelSpeed = Math.max(ShooterConstants.MIN_FLYWHEEL_SPEED.in(RotationsPerSecond), Math.min(wheelSpeed, ShooterConstants.MAX_FLYWHEEL_SPEED.in(RotationsPerSecond)));
         return wheelSpeed;
-        //return RotationsPerSecond.of(35);
     }
 
     public double calculateHoodAngleFromCurrentPose()
     {
         double hoodAngle = hoodAngleFormula(swerveDataSupplier.get().distanceToHub);
 
-        //SmartDashboard.putNumber("Conf/CalcHoodAngle", hoodAngle);
-
-       // if(SmartDashboard.getBoolean("UseManualShooterValues", false))
-        //{
-         //   hoodAngle = SmartDashboard.getNumber("ManualHoodAngle", hoodAngle);
-        //}
-
         double offsetDeg = ShooterConstants.HOOD_ANGLE_OFFSET.in(Degrees);
         double maxDeg = offsetDeg + ShooterConstants.MAX_HOOD_ANGLE.in(Degrees);
-        hoodAngle = Math.max(offsetDeg, Math.min(hoodAngle, maxDeg)); // Clamp between min and max hood angles
+        hoodAngle = Math.max(offsetDeg, Math.min(hoodAngle, maxDeg));
 
-        //System.out.println("Calculated Hood Angle: " + hoodAngle + "Distance: " + distance);
-        //return Degrees.of(hoodAngle);
         return (hoodAngle - offsetDeg) / 360;
     }
 
-        public double calculateRestFlywheelSpeedFromCurrentPose()
+    public double calculateRestFlywheelSpeedFromCurrentPose()
     {
-        // Placeholder implementation
-        // Replace with actual logic to calculate shooter wheel speed based on robot's current pose
-        return ShooterConstants.FLYWHEEL_REST_SPEED.in(RotationsPerSecond);//.div((3.0))
+        return ShooterConstants.FLYWHEEL_REST_SPEED.in(RotationsPerSecond);
     }
 
     public double calculateRestHoodAngleFromCurrentPose()
     {
-        // Placeholder implementation
-        // Replace with actual logic to calculate hood angle based on robot's current pose
-        return ShooterConstants.MIN_HOOD_ANGLE.in(Rotations);//.div((3.0))
+        return ShooterConstants.MIN_HOOD_ANGLE.in(Rotations);
     }
-
-
-    
-    public double hoodAngleFormulaOLD(double x)
-    {
-        double a = -0.18;
-        double b = 2.55;
-        double c = -5.59;
-        double d = 20.11;
-
-        return a*Math.pow(x, 3) + b*Math.pow(x, 2) + c*x + d;
-    } 
 
     public double hoodAngleFormula(double x)
     {

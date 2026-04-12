@@ -14,7 +14,6 @@ import com.pathplanner.lib.auto.AutoBuilder;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.DeferredCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
@@ -24,33 +23,19 @@ import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.States.SwerveStates.SwerveState;
 import frc.robot.Subsystems.Swerve.CommandSwerveDrivetrain;
 
-// NOTE:  Consider using this command inline, rather than writing a subclass.  For more
-// information, see:
-// https://docs.wpilib.org/en/stable/docs/software/commandbased/convenience-features.html
 public class SwerveGetIntoShootAreaCommand extends ParallelCommandGroup {
-  /** Creates a new SwerveGetIntoShootArea. */
-
   private CommandSwerveDrivetrain drivetrain;
   private Pose2d hubAimPose;
   private boolean isBlueAlliance;
 
   public SwerveGetIntoShootAreaCommand(CommandSwerveDrivetrain drivetrain) {
     this.drivetrain = drivetrain;
-    // Add your commands in the addCommands() call, e.g.
-    // addCommands(new FooCommand(), new BarCommand());
 
-    isBlueAlliance = DriverStation.getAlliance().map(a -> a == DriverStation.Alliance.Blue).orElse(true);
+    isBlueAlliance = !drivetrain.isRedAlliance();
 
-    //isBlueAlliance = true;
-
-    if(isBlueAlliance)
-    {
-      hubAimPose = new Pose2d(4.61, 4.1, new Rotation2d());
-    }
-    else
-    {
-      hubAimPose = new Pose2d(11.92, 4.1, new Rotation2d());
-    }
+    hubAimPose = isBlueAlliance
+        ? new Pose2d(4.61, 4.1, Rotation2d.kZero)
+        : new Pose2d(11.92, 4.1, Rotation2d.kZero);
 
 
     Command pathFindToShootingPose = new DeferredCommand(() -> AutoBuilder.pathfindToPose(calculateShootingPose().get(), DriveConstants.PATH_CONSTRAINTS_TO_POSE)

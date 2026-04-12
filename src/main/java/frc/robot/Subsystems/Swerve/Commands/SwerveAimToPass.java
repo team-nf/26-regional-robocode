@@ -13,29 +13,19 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.Constants.Dimensions;
 import frc.robot.Constants.DriveConstants;
-import frc.robot.Constants.PoseConstants;
-import frc.robot.Constants.TunerConstants;
 import frc.robot.Constants.States.SwerveStates.SwerveState;
 import frc.robot.Subsystems.Swerve.CommandSwerveDrivetrain;
 
-/* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class SwerveAimToPass extends Command {
-  /** Creates a new SwerveAimToHub. */
 
   private final CommandSwerveDrivetrain swerveDrivetrain;
 
   private PIDController aimingPID;
 
-  private Pose2d passAimPose;
-
-  private double MaxAngularRate = DriveConstants.AIMING_MAX_ANGULAR_VELOCITY.in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
-
-  private double[] prevErrors = new double[10];
+  private double goalAngle;
+  private double[] prevErrors = new double[DriveConstants.AIMING_ERROR_BUFFER_SIZE];
   private double averageError = 0.0;
 
   private SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
@@ -46,12 +36,6 @@ public class SwerveAimToPass extends Command {
 
     aimingPID = swerveDrivetrain.getAimingPID();
     addRequirements(swerveDrivetrain);
-
-
-
-    //hubAimPose = new Pose2d(4.61, 4.1, new Rotation2d());
-
-    
   }
 
   // Called when the command is initially scheduled.
@@ -60,7 +44,9 @@ public class SwerveAimToPass extends Command {
     aimingPID.reset();
     averageError = 1.0;
 
-    prevErrors = new double[15];
+    goalAngle = swerveDrivetrain.isRedAlliance() ? Math.toRadians(0) : Math.toRadians(180);
+
+    prevErrors = new double[DriveConstants.AIMING_ERROR_BUFFER_SIZE];
     for (int i = 0; i < prevErrors.length; i++) {
       prevErrors[i] = 1.0;
     }
@@ -71,24 +57,13 @@ public class SwerveAimToPass extends Command {
   public void execute() {
     Pose2d robotPose = swerveDrivetrain.getPose();
 
-    double goalAngle;
-
-    if(DriverStation.getAlliance().map(a -> a == DriverStation.Alliance.Blue).orElse(true))
-    {
-      goalAngle = Math.toRadians(180);
-    }
-    else
-    {
-       goalAngle = Math.toRadians(0);
-    }
-
     double angleError = goalAngle - robotPose.getRotation().getRadians();
 
     // Normalize angle error to the range [-pi, pi]
     angleError = Math.atan2(Math.sin(angleError), Math.cos(angleError));
     double output = aimingPID.calculate(-angleError);
 
-    swerveDrivetrain.updateSwerveErrors(robotPose.plus(new Transform2d(0.0, 0.0, new Rotation2d(averageError))));
+    swerveDrivetrain.updateSwerveErrors(robotPose.plus(new Transform2d(0.0, 0.0, Rotation2d.fromRadians(averageError))));
     swerveDrivetrain.setSwerveState(SwerveState.AIMING);
     swerveDrivetrain.updateSwerveData();
     
@@ -107,7 +82,7 @@ public class SwerveAimToPass extends Command {
     }
     averageError = errorSum / prevErrors.length;
 
-    swerveDrivetrain.setIsAimed(averageError < DriveConstants.AIMING_TOLERANCE_RADIANS*3);
+    swerveDrivetrain.setIsAimed(averageError < DriveConstants.PASS_AIMING_TOLERANCE_RADIANS);
   }
 
   // Called once the command ends or is interrupted.

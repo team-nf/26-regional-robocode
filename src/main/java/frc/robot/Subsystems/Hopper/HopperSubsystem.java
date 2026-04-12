@@ -122,38 +122,19 @@ public class HopperSubsystem extends SubsystemBase {
     return hopperData;
   }
 
+  private void scheduleIfNotRunning(Command action) {
+    var scheduler = CommandScheduler.getInstance();
+    if (!scheduler.isScheduled(action)) scheduler.schedule(action);
+  }
+
   public void stateMachine() {
     switch (hopperData.hopperControlState) {
-      case ZERO:
-        if(!CommandScheduler.getInstance().isScheduled(hopperZeroAction)) {
-          CommandScheduler.getInstance().schedule(hopperZeroAction);
-        }
-        break;
-      case FEED:
-        if(!CommandScheduler.getInstance().isScheduled(hopperFeedAction)) {
-          CommandScheduler.getInstance().schedule(hopperFeedAction);
-        }
-        break;
-      case PUSH:
-        if(!CommandScheduler.getInstance().isScheduled(hopperPushAction)) {
-          CommandScheduler.getInstance().schedule(hopperPushAction);
-        }
-        break;
-      case REVERSE:
-        if(!CommandScheduler.getInstance().isScheduled(hopperReverseAction)) {
-          CommandScheduler.getInstance().schedule(hopperReverseAction);
-        }
-        break;
-      case TEST:
-        if(!CommandScheduler.getInstance().isScheduled(hopperTestAction)) {
-          CommandScheduler.getInstance().schedule(hopperTestAction);
-        }
-        break;
-      default:
-        if(!CommandScheduler.getInstance().isScheduled(hopperZeroAction)) {
-          CommandScheduler.getInstance().schedule(hopperZeroAction);
-        }
-        break;
+      case ZERO:    scheduleIfNotRunning(hopperZeroAction); break;
+      case FEED:    scheduleIfNotRunning(hopperFeedAction); break;
+      case PUSH:    scheduleIfNotRunning(hopperPushAction); break;
+      case REVERSE: scheduleIfNotRunning(hopperReverseAction); break;
+      case TEST:    scheduleIfNotRunning(hopperTestAction); break;
+      default:      scheduleIfNotRunning(hopperZeroAction); break;
     }
   }
 

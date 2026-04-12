@@ -25,7 +25,6 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import frc.robot.Constants.Dimensions;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.HopperConstants;
-import frc.robot.Constants.PoseConstants;
 import frc.robot.Constants.TunerConstants;
 import frc.robot.Constants.States.FeederStates.FeederControlState;
 import frc.robot.Constants.States.HopperStates.HopperControlState;
@@ -43,7 +42,6 @@ import frc.robot.Subsystems.Swerve.CommandSwerveDrivetrain;
 import frc.robot.Subsystems.TheMachine.TheMachine;
 import frc.robot.Utils.FuelSim;
 import frc.robot.Utils.HopperSim;
-import frc.robot.Utils.Localization;
 import frc.robot.Utils.MatchTrackerSim;
 import frc.robot.Utils.ShooterSim;
 import frc.robot.Utils.SwerveFieldContactSim;
@@ -93,13 +91,10 @@ public class RobotContainer {
                             m_swerveDrivetrain.swerveDataSupplier());
     
 
-    //m_ledSubsytem = new LedSubsytem();
-
     m_driverController = new CommandXboxController(DriveConstants.DRIVER_CONTROLLER_PORT);
 
     configureBindings();
     if(Utils.isSimulation()) configureSims();
-    //configureTelemetry();
 
     boolean isCompetition = false;
     autoChooser = AutoBuilder.buildAutoChooserWithOptionsModifier(
@@ -270,7 +265,7 @@ public class RobotContainer {
     hopperSim.setShouldRemoveFuelSupplier(() -> m_intakeSubsystem.isIntakeDeployed() 
                         && m_intakeSubsystem.isIntakeState(IntakeControlState.REVERSE));
 
-    shooterSim.setShooterControlDataSupplier(m_shooterSubsystem::getCurrentControlData);
+    shooterSim.setShooterControlDataSupplier(m_shooterSubsystem::getShooterData);
     shooterSim.setRobotPoseSupplier(m_swerveDrivetrain::getPose);
     shooterSim.setChassisSpeedsSupplier(m_swerveDrivetrain::getFieldSpeeds);
     shooterSim.setShouldShootSupplier(() -> (m_shooterSubsystem.isShooterState(ShooterControlState.SHOOT) || m_shooterSubsystem.isShooterState(ShooterControlState.TEST))
@@ -303,9 +298,5 @@ public class RobotContainer {
         // Telemetry for the Command Scheduler
         SmartDashboard.putData("Command Scheduler", CommandScheduler.getInstance());
      }
-
-
-    //updateTelemetrySettings();
-
     }
 }

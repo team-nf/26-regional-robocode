@@ -13,19 +13,13 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.Constants.Dimensions;
 import frc.robot.Constants.DriveConstants;
 import frc.robot.Constants.PoseConstants;
-import frc.robot.Constants.TunerConstants;
 import frc.robot.Constants.States.SwerveStates.SwerveState;
 import frc.robot.Subsystems.Swerve.CommandSwerveDrivetrain;
 
-/* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class SwerveAimToHub extends Command {
-  /** Creates a new SwerveAimToHub. */
 
   private final CommandSwerveDrivetrain swerveDrivetrain;
 
@@ -33,9 +27,7 @@ public class SwerveAimToHub extends Command {
 
   private Pose2d hubAimPose;
 
-  private double MaxAngularRate = DriveConstants.AIMING_MAX_ANGULAR_VELOCITY.in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
-
-  private double[] prevErrors = new double[10];
+  private double[] prevErrors = new double[DriveConstants.AIMING_ERROR_BUFFER_SIZE];
   private double averageError = 0.0;
 
   private SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
@@ -54,16 +46,16 @@ public class SwerveAimToHub extends Command {
     aimingPID.reset();
     averageError = 1.0;
 
-    if(DriverStation.getAlliance().map(a -> a == DriverStation.Alliance.Blue).orElse(true))
-    {
-      hubAimPose = PoseConstants.BLUE_HUB_AIM_POSE;
-    }
-    else
+    if(swerveDrivetrain.isRedAlliance())
     {
       hubAimPose = PoseConstants.RED_HUB_AIM_POSE;
     }
+    else
+    {
+      hubAimPose = PoseConstants.BLUE_HUB_AIM_POSE;
+    }
 
-    prevErrors = new double[15];
+    prevErrors = new double[DriveConstants.AIMING_ERROR_BUFFER_SIZE];
     for (int i = 0; i < prevErrors.length; i++) {
       prevErrors[i] = 1.0;
     }
@@ -81,7 +73,7 @@ public class SwerveAimToHub extends Command {
     angleError = Math.atan2(Math.sin(angleError), Math.cos(angleError));
     double output = aimingPID.calculate(-angleError);
 
-    swerveDrivetrain.updateSwerveErrors(robotPose.plus(new Transform2d(0.0, 0.0, new Rotation2d(averageError))));
+    swerveDrivetrain.updateSwerveErrors(robotPose.plus(new Transform2d(0.0, 0.0, Rotation2d.fromRadians(averageError))));
     swerveDrivetrain.setSwerveState(SwerveState.AIMING);
     swerveDrivetrain.updateSwerveData();
     

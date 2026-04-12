@@ -35,7 +35,6 @@ public class FeederSubsystem extends SubsystemBase {
   public final Command feederReverseAction;
   public final Command feederTestAction;
 
-  /** Creates a new FeederSubsystem. */
   public FeederSubsystem() {
     if (Utils.isSimulation()) {
         feederHardware = new FeederSimHardware();
@@ -56,8 +55,8 @@ public class FeederSubsystem extends SubsystemBase {
     feederData.feederError = feederData.feederGoalVelocity - feederData.feederVelocity;
     
     feederData.feederRollerState = Math.abs(feederData.feederError) <= FeederConstants.FEEDER_ALLOWABLE_ERROR.in(RotationsPerSecond)
-        ? frc.robot.Constants.States.FeederStates.FeederRollerState.AT_SPEED
-        : frc.robot.Constants.States.FeederStates.FeederRollerState.REACHING_SPEED;
+        ? FeederRollerState.AT_SPEED
+        : FeederRollerState.REACHING_SPEED;
   }
 
   public void zero() {
@@ -116,28 +115,18 @@ public class FeederSubsystem extends SubsystemBase {
     return feederData;
   }
 
+  private void scheduleIfNotRunning(Command action) {
+    var scheduler = CommandScheduler.getInstance();
+    if (!scheduler.isScheduled(action)) scheduler.schedule(action);
+  }
+
   public void stateMachine() {
     switch (feederData.feederControlState) {
-      case ZERO:
-        if(!CommandScheduler.getInstance().isScheduled(feederZeroAction))
-                    CommandScheduler.getInstance().schedule(feederZeroAction);
-        break;
-      case FEED:
-        if(!CommandScheduler.getInstance().isScheduled(feederFeedAction))
-                    CommandScheduler.getInstance().schedule(feederFeedAction);
-        break;
-      case REVERSE:
-        if(!CommandScheduler.getInstance().isScheduled(feederReverseAction))
-                    CommandScheduler.getInstance().schedule(feederReverseAction);
-        break;
-      case TEST:
-        if(!CommandScheduler.getInstance().isScheduled(feederTestAction))
-                    CommandScheduler.getInstance().schedule(feederTestAction);
-        break;
-      default:
-        if(!CommandScheduler.getInstance().isScheduled(feederZeroAction))
-                    CommandScheduler.getInstance().schedule(feederZeroAction);
-        break;
+      case ZERO:    scheduleIfNotRunning(feederZeroAction); break;
+      case FEED:    scheduleIfNotRunning(feederFeedAction); break;
+      case REVERSE: scheduleIfNotRunning(feederReverseAction); break;
+      case TEST:    scheduleIfNotRunning(feederTestAction); break;
+      default:      scheduleIfNotRunning(feederZeroAction); break;
     }
   }
 

@@ -44,9 +44,6 @@ public class LEDController {
         leds.setData(buffer);
     }
     public void zeroAll() {
-               for (int i = 0; i < buffer.getLength(); i++) {
-            buffer.setRGB(i, 0, 0,0);
-        }
-        leds.setData(buffer); 
+        setAll(0, 0, 0);
     }
 }

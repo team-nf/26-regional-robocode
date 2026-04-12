@@ -47,9 +47,7 @@ import frc.robot.Subsystems.TheMachine.StateRequests.TheMachineIdleDeployedReque
 import frc.robot.Subsystems.TheMachine.StateRequests.TheMachineIdleRequest;
 import frc.robot.Subsystems.TheMachine.StateRequests.TheMachineIdleRetractedRequest;
 import frc.robot.Subsystems.TheMachine.StateRequests.TheMachineIntakeRequest;
-import frc.robot.Subsystems.TheMachine.StateRequests.TheMachineIntakeToggledRequest;
 import frc.robot.Subsystems.TheMachine.StateRequests.TheMachineNoneRequest;
-import frc.robot.Subsystems.TheMachine.StateRequests.TheMachinePreviousStateRequest;
 import frc.robot.Subsystems.TheMachine.StateRequests.TheMachineReverseRequest;
 import frc.robot.Subsystems.TheMachine.StateRequests.TheMachineShootRequest;
 import frc.robot.Subsystems.TheMachine.StateRequests.TheMachineTestRequest;
@@ -59,7 +57,7 @@ import frc.robot.Subsystems.TheMachine.Utils.TheMachineControlData;
 import frc.robot.Utils.MatchTracker;
 
 public class TheMachine {
-  /** Creates a new TheMachine. */
+
 
   private TheMachineControlData theMachineData;
 
@@ -82,11 +80,6 @@ public class TheMachine {
   private Command theMachineGetReadyActionPas;
 
   private LEDController leftLed;
-  //private LEDController rightLed;
-  //private LEDController frontLed;
-  //private LEDController backLed;
-
-  private boolean hasLotsOfFuel = true;
 
   private boolean intakeWithOffset = false;
 
@@ -124,9 +117,6 @@ public class TheMachine {
     theMachineGetReadyActionPas = TheMachineGetReadyActionPas.get(this);
 
     leftLed = new LEDController(0, 30);
-    //rightLed = new LEDController(1, 31);
-    //frontLed = new LEDController(2,31);
-    //backLed = new LEDController(3,31);
 
     matchTracker = new MatchTracker();
   }
@@ -242,11 +232,6 @@ public class TheMachine {
     return intakeSubsystem.testRequest();
   }
 
-  public InstantCommand intakeChangeOffsetCommand()
-  {
-    return new InstantCommand(() -> changeIntakeMode());
-  }
-
   // Wait for Commands
   public WaitUntilCommand waitForShooter()
   {
@@ -261,10 +246,6 @@ public class TheMachine {
   public WaitUntilCommand waitForIntakeRetract()
   {
     return intakeSubsystem.waitForIntakeToBeRetracted();
-  }
-
-  public Command previousStateRequest() {
-    return new TheMachinePreviousStateRequest(this);
   }
 
   public Command zeroRequest(){
@@ -285,10 +266,6 @@ public class TheMachine {
 
   public Command intakeRequest() {
       return new TheMachineIntakeRequest(this);
-  }
-
-    public InstantCommand intakeToggledRequest() {
-      return new TheMachineIntakeToggledRequest(this);
   }
 
   public Command shootRequest() {
@@ -354,73 +331,33 @@ public class TheMachine {
     funnelPosePublisher.set(funnelPose);
   }
 
+  private void scheduleIfNotRunning(Command action) {
+    var scheduler = CommandScheduler.getInstance();
+    if (!scheduler.isScheduled(action)) {
+      scheduler.schedule(action);
+    }
+  }
+
   public void stateMachine() {
     switch (theMachineData.theMachineControlState) {
-      case ZERO:
-        if(!CommandScheduler.getInstance().isScheduled(theMachineZeroAction))
-        {
-          CommandScheduler.getInstance().schedule(theMachineZeroAction);
-        }
-        break;
-      case IDLE_DEPLOYED:
-        if(!CommandScheduler.getInstance().isScheduled(theMachineIdleDeployedAction))
-        {
-          CommandScheduler.getInstance().schedule(theMachineIdleDeployedAction);
-        }
-        break;
-      case IDLE_RETRACTED:
-        if(!CommandScheduler.getInstance().isScheduled(theMachineIdleRetractedAction))
-        {
-          CommandScheduler.getInstance().schedule(theMachineIdleRetractedAction);
-        }
-        break;
-      case INTAKE:
-        if(!CommandScheduler.getInstance().isScheduled(theMachineIntakeAction))
-        {
-          CommandScheduler.getInstance().schedule(theMachineIntakeAction);
-        }
-        break;
-      case SHOOT:
-        if(!CommandScheduler.getInstance().isScheduled(theMachineShootAction))
-        {
-          CommandScheduler.getInstance().schedule(theMachineShootAction);
-        }
-        break;
-      case REVERSE:
-        if(!CommandScheduler.getInstance().isScheduled(theMachineReverseAction))
-        {
-          CommandScheduler.getInstance().schedule(theMachineReverseAction);
-        }
-        break;
-      case TEST:
-        if(!CommandScheduler.getInstance().isScheduled(theMachineTestAction))
-        {
-          CommandScheduler.getInstance().schedule(theMachineTestAction);
-        }
-        break;
-      case IDLE:
-        if (!CommandScheduler.getInstance().isScheduled(theMachineIdleAction)) {
-          CommandScheduler.getInstance().schedule(theMachineIdleAction);
-        }
-        break;
-      case GET_READY:
-        if (!CommandScheduler.getInstance().isScheduled(theMachineGetReadyAction)) {
-          CommandScheduler.getInstance().schedule(theMachineGetReadyAction);
-        }
-        break;
-      case GET_READY_PAS:
-        if (!CommandScheduler.getInstance().isScheduled(theMachineGetReadyActionPas)) {
-          CommandScheduler.getInstance().schedule(theMachineGetReadyActionPas);
-        }
-        break;
+      case ZERO:            scheduleIfNotRunning(theMachineZeroAction); break;
+      case IDLE_DEPLOYED:   scheduleIfNotRunning(theMachineIdleDeployedAction); break;
+      case IDLE_RETRACTED:  scheduleIfNotRunning(theMachineIdleRetractedAction); break;
+      case INTAKE:          scheduleIfNotRunning(theMachineIntakeAction); break;
+      case SHOOT:           scheduleIfNotRunning(theMachineShootAction); break;
+      case REVERSE:         scheduleIfNotRunning(theMachineReverseAction); break;
+      case TEST:            scheduleIfNotRunning(theMachineTestAction); break;
+      case IDLE:            scheduleIfNotRunning(theMachineIdleAction); break;
+      case GET_READY:       scheduleIfNotRunning(theMachineGetReadyAction); break;
+      case GET_READY_PAS:   scheduleIfNotRunning(theMachineGetReadyActionPas); break;
       case NONE:
-        CommandScheduler.getInstance().schedule(shooterSubsystem.zeroRequest());
-        CommandScheduler.getInstance().schedule(feederSubsystem.zeroRequest());
-        CommandScheduler.getInstance().schedule(hopperSubsystem.zeroRequest());
-        CommandScheduler.getInstance().schedule(intakeSubsystem.closeRequest());
+        var scheduler = CommandScheduler.getInstance();
+        scheduler.schedule(shooterSubsystem.zeroRequest());
+        scheduler.schedule(feederSubsystem.zeroRequest());
+        scheduler.schedule(hopperSubsystem.zeroRequest());
+        scheduler.schedule(intakeSubsystem.closeRequest());
         break;
-      default:
-        break;
+      default: break;
     }
   }
 
@@ -438,11 +375,6 @@ public class TheMachine {
     leftLed.setMultiple2(0.5,1, 0, 255, 0);
   }
 
-  public boolean isThereLotsOfFuel()
-  {
-    return hasLotsOfFuel;
-  }
-
   public boolean isIntakeWithoutOffset()
   {
     return !intakeWithOffset;
@@ -455,7 +387,6 @@ public class TheMachine {
 
   public void periodic() {
     matchTracker.updateMatchTracker();
-    //updateLeds();
     
     if (TelemetryConstants.SHOULD_THEMACHINE_DATA_COMMUNICATE)
     {
@@ -467,15 +398,6 @@ public class TheMachine {
     if (TelemetryConstants.SHOULD_THEMACHINE_SIM_POSES_COMMUNICATE)
     {
       calculateSubsytemPoses();
-    }
-
-    if(!SmartDashboard.containsKey("Conf/HasLotsOfFuel")) 
-    {
-      SmartDashboard.putBoolean("Conf/HasLotsOfFuel", hasLotsOfFuel);
-    }
-    else
-    {
-      hasLotsOfFuel = SmartDashboard.getBoolean("Conf/HasLotsOfFuel", hasLotsOfFuel);
     }
   }
 }

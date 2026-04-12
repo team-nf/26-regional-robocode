@@ -4,7 +4,6 @@
 
 package frc.robot.Constants;
 
-/** Add your docs here. */
 public class States {
 
     public static class ShooterStates {
