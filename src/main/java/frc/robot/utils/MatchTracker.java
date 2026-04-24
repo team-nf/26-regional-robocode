@@ -6,7 +6,6 @@ import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StringPublisher;
 import edu.wpi.first.wpilibj.DriverStation;
-import frc.robot.constants.TelemetryConstants;
 
 /** Add your docs here. */
 public class MatchTracker {

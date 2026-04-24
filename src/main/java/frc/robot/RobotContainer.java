@@ -26,7 +26,6 @@ import frc.robot.commands.AutoCommands.AimAndPassAutoCommand;
 import frc.robot.commands.AutoCommands.AimAndShootAutoCommand;
 import frc.robot.commands.GoFromLeftTrenchCommand;
 import frc.robot.commands.GoFromRightTrenchCommand;
-import frc.robot.commands.GoToMidCommand;
 import frc.robot.commands.IdleDeployedCommand;
 import frc.robot.commands.IdleRetractedCommand;
 import frc.robot.commands.IntakeCommand;
@@ -150,11 +149,12 @@ public class RobotContainer {
                 new ReturnFromRightTrenchCommand(m_drivetrainSubsystem, m_theMachine),
                 m_drivetrainSubsystem::isRobotOnLeftSide),
             m_drivetrainSubsystem::isRobotOnTheShootingZone);
-    
-    m_shootCommand = new ConditionalCommand(
-                m_aimAndShootCommand,
-                m_aimAndPassCommand,
-                m_drivetrainSubsystem::isRobotOnTheShootingZone);
+
+    m_shootCommand =
+        new ConditionalCommand(
+            m_aimAndShootCommand,
+            m_aimAndPassCommand,
+            m_drivetrainSubsystem::isRobotOnTheShootingZone);
 
     configureBindings();
 
@@ -195,20 +195,14 @@ public class RobotContainer {
     // - In shooting zone: aim + shoot
     // - Elsewhere: aim + pass
     // On release: return to deployed idle (safe transition).
-    m_driverController
-        .leftTrigger()
-        .whileTrue(m_shootCommand)
-        .onFalse(m_idleDeployedCommand);
+    m_driverController.leftTrigger().whileTrue(m_shootCommand).onFalse(m_idleDeployedCommand);
 
     m_driverController
         .rightTrigger()
         .whileTrue(new AimAndShootCommand(m_drivetrainSubsystem, m_driverController, m_theMachine))
         .onFalse(m_idleDeployedCommand);
 
-    m_driverController
-        .a()
-        .whileTrue(m_reverseCommand)
-        .onFalse(m_idleDeployedCommand);
+    m_driverController.a().whileTrue(m_reverseCommand).onFalse(m_idleDeployedCommand);
 
     // Y -> run NetworkTables-driven machine test mode while held.
     m_driverController.y().whileTrue(m_testShootCommand).onFalse(m_idleDeployedCommand);
@@ -254,7 +248,7 @@ public class RobotContainer {
             new IdleDeployedCommand(m_theMachine).until(m_shooterSubsystem::isHoodClosed)));
     NamedCommands.registerCommand(
         "IdleDeployedNC",
-            new IdleDeployedCommand(m_theMachine).until(m_shooterSubsystem::isHoodClosed));
+        new IdleDeployedCommand(m_theMachine).until(m_shooterSubsystem::isHoodClosed));
   }
 
   public Command getAutonomousCommand() {
@@ -265,6 +259,7 @@ public class RobotContainer {
   boolean telemetryEnabled;
   double nowSec;
   double loopTimeMs;
+
   public void containerPeriodic() {
     telemetryEnabled = telemetryEnabledEntry.get(false);
 
@@ -516,7 +511,5 @@ public class RobotContainer {
     SmartDashboard.putData(
         "SysId/Feeder/Feed/DynamicReverse",
         m_feederSubsystem.feederFeedSysIdDynamic(SysIdRoutine.Direction.kReverse));
-
-    
   }
 }

@@ -236,7 +236,7 @@ public class AimAndPassCommand extends Command {
     predictedHeading = heading + speeds.omegaRadiansPerSecond * TURRET_LOOKAHEAD_SEC;
 
     distance = Math.hypot(passAimPose.getX() - shooterX, passAimPose.getY() - shooterY);
-    time = ShooterCalculator.flightTimeOfFuelFormula(distance)*0.8;
+    time = ShooterCalculator.flightTimeOfFuelFormula(distance) * 0.8;
 
     aimX = passAimPose.getX() - (filteredSpeedX * time);
     aimY = passAimPose.getY() - (filteredSpeedY * time);
@@ -269,7 +269,7 @@ public class AimAndPassCommand extends Command {
             .withRotationalRate(-driverController.getRightX() * MaxAngularRate));
 
     // 3) Solve pass setpoints and gate feed on shooter readiness.
-  velocityRPS = ShooterCalculator.calculatePassSpeedFromCurrentPose(robotPose);
+    velocityRPS = ShooterCalculator.calculatePassSpeedFromCurrentPose(robotPose);
     hoodAngle = ShooterCalculator.calculatePassHoodAngle();
 
     shouldPass = theMachine.isPassReady() || Robot.isSimulation();

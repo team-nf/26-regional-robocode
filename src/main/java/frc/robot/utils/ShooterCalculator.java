@@ -33,7 +33,7 @@ public final class ShooterCalculator {
   private static final double LOOKUP_STEP_METERS = 0.5;
   private static final double LOOKUP_MAX_DISTANCE_METERS = 6.5;
 
-   // Columns: [0] = shooter RPS, [1] = hood angle deg
+  // Columns: [0] = shooter RPS, [1] = hood angle deg
   private static final double[][] SHOOTER_LOOKUP_TABLE_PREV = {
     {38, 4}, // 0.5 meters
     {29, 4.5}, // 1.0 meters
