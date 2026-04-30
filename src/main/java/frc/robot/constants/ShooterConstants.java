@@ -67,8 +67,8 @@ public class ShooterConstants {
           .withCurrentLimits(
               new CurrentLimitsConfigs()
                   .withSupplyCurrentLimitEnable(true)
-                  .withSupplyCurrentLimit(38)
-                  .withStatorCurrentLimit(38))
+                  .withSupplyCurrentLimit(35)
+                  .withStatorCurrentLimit(35))
           .withMotorOutput(
               new MotorOutputConfigs()
                   .withInverted(InvertedValue.Clockwise_Positive)
@@ -200,7 +200,7 @@ public class ShooterConstants {
       FLYWHEEL_MOMENT_OF_INERTIA.plus(HOOD_MOMENT_OF_INERTIA);
 
   public static final Angle MIN_HOOD_ANGLE = Degrees.of(0);
-  public static final Angle MAX_HOOD_ANGLE = Degrees.of(20);
+  public static final Angle MAX_HOOD_ANGLE = Degrees.of(24.5);
   public static final Angle PASS_HOOD_ANGLE = Degrees.of(14);
 
   public static final Angle MIN_HOOD_MOTOR_ANGLE = MIN_HOOD_ANGLE.times(HOOD_GEAR_REDUCTION);
@@ -217,6 +217,6 @@ public class ShooterConstants {
   public static final AngularVelocity MIN_FLYWHEEL_SPEED =
       RotationsPerSecond.of(500 / 60); // in RPS
   public static final AngularVelocity MAX_FLYWHEEL_SPEED =
-      RotationsPerSecond.of(3750 / 60); // in RPS
+      RotationsPerSecond.of(100); // in RPS
   public static final AngularVelocity FLYWHEEL_REST_SPEED = RotationsPerSecond.of(0 / 60); // in RPS
 }
